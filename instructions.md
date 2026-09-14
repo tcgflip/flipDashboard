@@ -43,3 +43,16 @@ Only recommend modern cards:
 
 ### Retired
 The $5–$20 / 35–40% ROI "singles-only pilot" from 2026-09-13 is retired. Its three picks (Espeon-GX sm1-61, Umbreon bw5-61, Sylveon xy3-72) don't qualify under the modern-only rule (all pre-2020) and are now Passed in `holdings-log.md`.
+
+## Live settings API (added 2026-09-14)
+At the start of every run, GET https://flipdashboard.tcgflip.workers.dev/api/state to read the current live toggle settings — this reflects what Ryan has tapped on his phone since the last run and takes priority over whatever was last committed. Use it to decide which categories to research, and write the same values into data.json's strategy.productTypes so the display stays in sync. Don't overwrite the live KV state yourself — that endpoint is read-only from the routine's side.
+
+## Card images & TCGplayer links
+For every buyList and holdings entry, include a "cardId" field in pokemontcg.io's ID format (e.g. "sv1-201") whenever you're confident of it — the dashboard builds the card image from images.pokemontcg.io/{setId}/{number}.png automatically. Leave it out rather than guess; a missing image is fine, a wrong one looks broken.
+
+## Holdings verdicts
+For every entry in holdings, include:
+- "verdict": one of "sell", "hold", "watch"
+- "recommendation": a short plain-language reason for that verdict
+- "currentMarketPrice": today's comp, cited from a real source
+Base it on current market price vs. the original target sell price/date, and any upcoming catalyst (a show, a release date) that might justify waiting.
