@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-09-13",
+  "generated_at": "2026-09-14",
   "strategy": {
-    "mode": "Singles-only pilot",
-    "priceBand": "$5–$20 per card",
-    "roiTarget": "35–40% net",
-    "holdPeriod": "2–4 weeks, tied to the 30th Celebration hype window"
+    "productTypes": { "sealed": true, "rawSingles": true, "slabs": true },
+    "sealedRule": "Only recommend sealed product where calculated box/pack EV exceeds current market price by 15%+",
+    "singlesSlabsRule": "Modern (2020 or later) only, popular and vendor-table-liquid, target buy price under $50, sorted by highest ROI",
+    "holdPeriod": "Flexible, days–weeks, longer only with a real catalyst date"
   },
   "shows": [
     { "name": "Aloha Card Show", "venue": "Neal S. Blaisdell Center Exhibition Hall", "start_date": "2026-09-19", "display_dates": "Sept 19–20", "note": "10am–6pm both days, $10/day, free all day for Aloha Pacific FCU cardholders" },
@@ -14,11 +14,8 @@
     { "name": "808 Cards and Collectibles Show", "venue": "Oʻahu Veteran Center", "start_date": "2026-10-18", "display_dates": "Oct 18", "note": "Same day as Paradise Card Show — conflict, pick one" },
     { "name": "Spotlight Card Show", "venue": "Hawaii Convention Center", "start_date": "2026-10-24", "display_dates": "Oct 24–25", "note": "450+ vendors — Pokémon, sports, One Piece, Yu-Gi-Oh" }
   ],
-  "buyList": [
-    { "card": "Espeon-GX", "set": "Sun & Moon Base #61/149", "targetPrice": 6.00, "marketPrice": 10.59, "expectedROI": "~37%", "sellBy": "2026-10-11", "thesis": "Mascot of the Espeon ex / Umbreon ex Battle Decks (Oct 30) — spillover demand expected as anniversary hype builds.", "source": "prices.pokemontcg.io/tcgplayer/sm1-61" },
-    { "card": "Umbreon", "set": "Dark Explorers #61/108", "targetPrice": 10.00, "marketPrice": 18.90, "expectedROI": "~54%", "sellBy": "2026-10-11", "thesis": "Same mascot-spillover thesis as Espeon.", "source": "prices.pokemontcg.io/tcgplayer/bw5-61" },
-    { "card": "Sylveon", "set": "Furious Fists #72/111", "targetPrice": 7.00, "marketPrice": 14.20, "expectedROI": "~62%", "sellBy": "2026-10-11", "thesis": "Box-art mascot of the Sylveon ex / Greninja ex Box (Sept 16 release).", "source": "prices.pokemontcg.io/tcgplayer/xy3-72" }
-  ],
+  "buyList": [],
+  "buyListNote": "No picks yet under the new strategy (added 2026-09-14) — the next scheduled run generates the first batch across whichever product types are toggled on above.",
   "holdings": [],
   "giveaways": [
     { "name": "RaffledUp — 30th Celebration ETB entry", "flag": "Paid raffle, not a free giveaway", "note": "Entry fee required; seller reputation not verified. Flagged, not recommended." }
