@@ -4,6 +4,21 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-14 — Daily quick-check (same day as the weekly deep dive below)
+
+**Scope:** Lightweight spot-check per `instructions.md` — imminent events, a price sanity-check on current buy-list picks, and a scan for new giveaways. Not a full re-run of the show calendar or a fresh EV pass (that happened in today's weekly deep dive, below).
+
+**Checked:**
+- Bayview Night Market (tomorrow, Sept 15) — confirmed still on. Corrected `context.md`: venue is Kāneʻohe only (45-285 Kāneʻohe Bay Dr), not the ambiguous "ʻAiea/Kāneʻohe" phrasing that was there before; added host (@pkmn.collective) and cadence detail (1st & 3rd Tuesdays, matches existing dates).
+- Aloha Card Shop 30th Celebration listings — still none confirmed, 2 days out from the Sept 16 launch. Unchanged from this morning; still needs the direct post-launch recheck already flagged in `context.md`.
+- Buy-list price sanity check via WebSearch: Umbreon VMAX ($26.97 PokeScope read) is consistent with the $22.21 buy / $29.99 sell already on the list — no change. Rayquaza VMAX turned up a conflicting market read ($10.31 PokeScope vs. the $15.39 this pick relies on, ~33% spread) — flagged in `holdings-log.md` and `data.json` rather than pulled, since its Sept 28 sell-by isn't imminent yet and the conflict isn't resolved via a direct source.
+- New giveaways: none found.
+- Holdings: nothing to advise on — every item on the list is still Proposed, none confirmed Holding yet.
+
+**Files updated:** `context.md` (Bayview Night Market venue correction), `holdings-log.md` (daily-check note + Rayquaza VMAX price flag), `data.json` (rebuilt to match — Rayquaza VMAX thesis now includes the price flag), `run-log.md` (this entry).
+
+---
+
 ## 2026-09-14 — Weekly deep dive (first run under the new modern-only/toggle strategy, and first entry in this file)
 
 **Scope:** Full weekly deep dive per `instructions.md` — re-verified the Oʻahu show calendar, ran sealed-product EV math, and sourced the first batch of raw-singles/slabs picks under the modern-only (2020+) rule set adopted 2026-09-13.

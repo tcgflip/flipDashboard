@@ -2,7 +2,7 @@
 
 This is a living document. Add to it whenever a run turns up a new shop, show series, or source — or finds that one of these is stale/dead.
 
-_Last researched: 2026-09-14 (weekly deep dive)._
+_Last researched: 2026-09-14 (weekly deep dive; same-day daily quick-check also run, see run-log.md)._
 
 ## Card show calendar sources (check these, don't rely on memory)
 
@@ -21,7 +21,7 @@ _Last researched: 2026-09-14 (weekly deep dive)._
 - **Pokémon, Sports Cards & More** — rotates Ala Moana Hotel / Prince Waikiki / Hawaii Convention Center — roughly monthly (Sept 27 = Ala Moana Hotel, Hibiscus Ballroom & Garden Lanai, 410 Atkinson Dr, 10am-5pm; Oct 25 = Prince Waikiki)
 - **808 Cards and Collectibles Show** — Oʻahu Veteran Center (Oct 18 2026)
 - **Paradise Card Show** — The Republik — monthly-ish (Oct 18 2026, same day as 808 Cards — conflict, pick one)
-- **Bayview Night Market** — Bayview Golf Course, ʻAiea/Kāneʻohe — biweekly Tuesdays (Sept 15, Oct 6, Oct 20 2026)
+- **Bayview Night Market** — Bayview Golf Course, 45-285 Kāneʻohe Bay Dr, **Kāneʻohe** (CONFIRMED 2026-09-14 daily check — venue is Windward side only, not ʻAiea; earlier "ʻAiea/Kāneʻohe" phrasing in this file was ambiguous) — hosted by @pkmn.collective, 1st & 3rd Tuesdays monthly (Sept 15, Oct 6, Oct 20 2026), free entry, Pokémon/One Piece/sports sealed+singles+slabs
 - **808 Showcase Trade Night** — Pearlridge Center, Wai Makai 2nd level, Aiea — 3rd Friday monthly, 4-8pm (confirmed via pearlridgeonline.com) — Sept 18, Oct 16 2026
 - **West Side Card Show** — Kroc Center, **Kapolei** (Leeward Oʻahu; hosted by Rocket Relics) — CORRECTED 2026-09-14, previously mislabeled "Kāneʻohe" in this file (that's Bayview Night Market's location, Windward side, a different venue entirely) — next confirmed West Side Card Show IV, Dec 5-6 2026
 - **Aloha Card Show** — Neal S. Blaisdell Center Exhibition Hall — ~2x/year, general collectibles (Sept 19-20 2026 confirmed via alohacardshow.com: 10am-6pm both days; $10/day general admission (ages 7+); free all day both days for Aloha Pacific FCU cardholders, who also get early entry 9-10am)
