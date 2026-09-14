@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#14213D">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='36' fill='%2314213D'/%3E%3Ctext x='90' y='120' font-family='Georgia,serif' font-size='84' fill='%23E3A857' text-anchor='middle'%3EWL%3C/text%3E%3C/svg%3E">
+<title>Windward Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#14213D; --navy-light:#1E2E4F; --gold:#E3A857;
+    --coral:#E8664A; --cream:#F2EFE6; --muted:#9AA7BD;
+    --hairline:rgba(242,239,230,0.14);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--navy); color:var(--cream);
+    font-family:'IBM Plex Sans',sans-serif; line-height:1.45;
+    padding-bottom:calc(48px + env(safe-area-inset-bottom));
+  }
+  h1,h2,.num{font-family:'Fraunces',serif;}
+  header{
+    padding:calc(28px + env(safe-area-inset-top)) 24px 20px;
+    border-bottom:1px solid var(--hairline);
+  }
+  h1{font-size:28px; font-weight:600; margin:0 0 4px;}
+  .subtitle{margin:0; color:var(--muted); font-size:14px;}
+  #updated{margin:12px 0 0; color:var(--muted); font-size:13px;}
+  main{max-width:640px; margin:0 auto; padding:0 20px;}
+  section{padding:28px 4px;}
+  section + section{border-top:1px solid var(--hairline);}
+  h2{font-size:20px; font-weight:600; margin:0 0 16px;}
+  .row{display:flex; gap:16px; padding:14px 0;}
+  .row + .row{border-top:1px solid var(--hairline);}
+  .date-badge{flex:0 0 52px; text-align:center;}
+  .date-badge .day{font-size:22px; font-weight:600; display:block;}
+  .date-badge .month{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em;}
+  .item-name{font-weight:600; font-size:16px;}
+  .item-note{color:var(--muted); font-size:13px; margin-top:2px;}
+  .tag{display:inline-block; font-size:12px; color:var(--coral); margin-top:4px;}
+  .directions{font-size:13px; color:var(--gold); text-decoration:none; display:inline-block; margin-top:6px;}
+  .buy-row{padding:16px 0;}
+  .buy-row + .buy-row{border-top:1px solid var(--hairline);}
+  .buy-head{display:flex; justify-content:space-between; align-items:baseline;}
+  .price{font-size:24px; font-weight:600; color:var(--gold);}
+  .market{color:var(--muted); font-size:13px; margin-left:8px;}
+  .roi{color:var(--coral); font-size:13px; font-weight:500;}
+  .thesis{color:var(--muted); font-size:13px; margin-top:6px; max-width:52ch;}
+  .source{color:var(--muted); font-size:11px; margin-top:6px; display:block;}
+  .empty{color:var(--muted); font-size:14px;}
+  .warn{border-left:3px solid var(--coral); padding:12px 16px; background:var(--navy-light);}
+  .warn .item-name{color:var(--cream);}
+  .warn .tag{margin-top:6px;}
+  footer{max-width:640px; margin:0 auto; padding:20px 24px; color:var(--muted); font-size:12px;}
+</style>
+</head>
+<body>
+  <header>
+    <h1>Windward Ledger</h1>
+    <p class="subtitle">Oʻahu Pokémon TCG tracker</p>
+    <p id="updated">Loading…</p>
+  </header>
+  <main>
+    <section>
+      <h2>Upcoming shows</h2>
+      <div id="shows-list"></div>
+    </section>
+    <section>
+      <h2>Buy list</h2>
+      <div id="buylist-list"></div>
+    </section>
+    <section>
+      <h2>Holdings</h2>
+      <div id="holdings-list"></div>
+    </section>
+    <section>
+      <h2>Flagged giveaways</h2>
+      <div id="giveaways-list"></div>
+    </section>
+  </main>
+  <footer>Updates each time the tracker runs — reload to see the latest.</footer>
+
+<script>
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+fetch('./data.json?_=' + Date.now())
+  .then(r => r.json())
+  .then(render)
+  .catch(() => { document.getElementById('updated').textContent = 'Could not load data.json.'; });
+
+function render(data) {
+  document.getElementById('updated').textContent = 'Updated ' + data.generated_at;
+
+  const shows = [...data.shows].sort((a,b) => new Date(a.start_date) - new Date(b.start_date));
+  const showsEl = document.getElementById('shows-list');
+  showsEl.innerHTML = shows.map(s => {
+    const d = new Date(s.start_date + 'T00:00:00');
+    const daysUntil = Math.ceil((d - new Date()) / 86400000);
+    const countdown = daysUntil > 1 ? `In ${daysUntil} days` : daysUntil === 1 ? 'Tomorrow' : daysUntil === 0 ? 'Today' : '';
+    const mapsUrl = 'https://maps.apple.com/?q=' + encodeURIComponent(s.venue);
+    return `<div class="row">
+      <div class="date-badge">
+        <span class="day">${d.getDate()}</span>
+        <span class="month">${MONTHS[d.getMonth()]}</span>
+      </div>
+      <div>
+        <div class="item-name">${s.name}</div>
+        <div class="item-note">${s.venue} · ${s.display_dates}${countdown ? ' · ' + countdown : ''}</div>
+        <div class="item-note">${s.note}</div>
+        ${s.unconfirmed ? '<div class="tag">Unconfirmed</div>' : ''}
+        <a class="directions" href="${mapsUrl}">Directions</a>
+      </div>
+    </div>`;
+  }).join('');
+
+  const buyEl = document.getElementById('buylist-list');
+  buyEl.innerHTML = data.buyList.map(b => `
+    <div class="buy-row">
+      <div class="buy-head">
+        <div>
+          <div class="item-name">${b.card}</div>
+          <div class="item-note">${b.set}</div>
+        </div>
+        <div style="text-align:right;">
+          <span class="num price">$${b.targetPrice.toFixed(2)}</span>
+          <span class="market">mkt $${b.marketPrice.toFixed(2)}</span>
+          <div class="roi">${b.expectedROI} net · sell by ${b.sellBy}</div>
+        </div>
+      </div>
+      <div class="thesis">${b.thesis}</div>
+      <span class="source">${b.source}</span>
+    </div>
+  `).join('');
+
+  const holdingsEl = document.getElementById('holdings-list');
+  holdingsEl.innerHTML = data.holdings.length
+    ? data.holdings.map(h => `<div class="row"><div><div class="item-name">${h.card}</div><div class="item-note">${h.note || ''}</div></div></div>`).join('')
+    : '<p class="empty">Nothing bought yet. Once you pick up a card from the buy list, it shows up here with its target sell date.</p>';
+
+  const giveEl = document.getElementById('giveaways-list');
+  giveEl.innerHTML = data.giveaways.length
+    ? data.giveaways.map(g => `<div class="warn"><div class="item-name">${g.name}</div><div class="tag">${g.flag}</div><div class="item-note">${g.note}</div></div>`).join('')
+    : '<p class="empty">No giveaways flagged right now.</p>';
+}
+</script>
+</body>
+</html>
