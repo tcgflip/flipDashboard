@@ -15,7 +15,9 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 - New giveaways: none found — one non-giveaway event turned up (Aloha Comic Con Card Pavilion, Hawaii Convention Center) but it was dated Sept 12, already past, and wasn't added.
 - Holdings: nothing to advise on — everything is still Proposed.
 
-**Files updated:** `holdings-log.md` (this check's note), `data.json` (no content changes — nothing material to rebuild), `run-log.md` (this entry).
+**Git workflow note (worth Ryan's attention):** This session was assigned an isolated feature branch (`claude/practical-edison-gj8ts3`) by the harness and instructed never to push directly to `main` or open a PR without being asked — a change from every prior logged run, which pushed straight to `main` (confirmed: `main`'s history up through the second quick-check above is all direct single commits, no PR merges). This run's changes are log-only (no `data.json` content changed), so nothing was lost this time, but if a future run with real `data.json` changes gets the same branch restriction, those changes won't reach `main` — and won't reach the live dashboard — unless someone merges the branch/PR. Worth checking whether this branch policy is intended to stick; if so the workflow needs a PR-merge step (manual or automated) added, or Ryan needs to explicitly authorize direct-to-main pushes again.
+
+**Files updated:** `holdings-log.md` (this check's note), `data.json` (no content changes — nothing material to rebuild), `run-log.md` (this entry). Pushed to branch `claude/practical-edison-gj8ts3`, not `main` — see git workflow note above.
 
 ---
 
