@@ -8,14 +8,26 @@
   },
   "shows": [
     { "name": "Aloha Card Show", "venue": "Neal S. Blaisdell Center Exhibition Hall", "start_date": "2026-09-19", "display_dates": "Sept 19–20", "note": "10am–6pm both days, $10/day, free all day for Aloha Pacific FCU cardholders" },
+    { "name": "Urban Soccer Hawaii Card Show", "venue": "218 Mohonua Pl, Honolulu", "start_date": "2026-09-26", "display_dates": "Sept 26", "note": "Confirmed via tcdb.com and hawaiicardshows.com — corrected from earlier Sept 27 estimate" },
     { "name": "Pokémon, Sports Cards & More", "venue": "Ala Moana Hotel, Hibiscus Ballroom & Garden Lanai", "start_date": "2026-09-27", "display_dates": "Sept 27", "note": "10am–5pm" },
-    { "name": "Urban Soccer Hawaii Card Show", "venue": "218 Mohonua Pl, Honolulu", "start_date": "2026-09-26", "display_dates": "~Sept 26", "note": "Date not firmly confirmed — verify before going", "unconfirmed": true },
-    { "name": "Keep It Aloha Card Show", "venue": "SALT at Our Kakaako", "start_date": "2026-10-03", "display_dates": "Oct 3–4", "note": "First weekend of the month" },
-    { "name": "808 Cards and Collectibles Show", "venue": "Oʻahu Veteran Center", "start_date": "2026-10-18", "display_dates": "Oct 18", "note": "Same day as Paradise Card Show — conflict, pick one" },
-    { "name": "Spotlight Card Show", "venue": "Hawaii Convention Center", "start_date": "2026-10-24", "display_dates": "Oct 24–25", "note": "450+ vendors — Pokémon, sports, One Piece, Yu-Gi-Oh" }
+    { "name": "Keep It Aloha Card Show", "venue": "SALT at Our Kakaako", "start_date": "2026-10-03", "display_dates": "Oct 3–4", "note": "First weekend of the month, 10am–6pm, free, festival-style" },
+    { "name": "Sports Cards & Collectibles Show", "venue": "Pearlridge Center (Lower Pearlridge)", "start_date": "2026-10-10", "display_dates": "~Oct 10–11", "note": "2nd weekend monthly pattern confirmed; exact October date not yet individually listed by name", "unconfirmed": true },
+    { "name": "808 Cards and Collectibles Show", "venue": "Oʻahu Veteran Center", "start_date": "2026-10-18", "display_dates": "Oct 18", "note": "Same day as Paradise Card Show — real confirmed conflict, pick one" },
+    { "name": "Paradise Card Show", "venue": "The Republik", "start_date": "2026-10-18", "display_dates": "Oct 18", "note": "50+ vendors, ~1,300+ collectors typical. Same day as 808 Cards and Collectibles Show — pick one" },
+    { "name": "Spotlight Card Show", "venue": "Hawaii Convention Center", "start_date": "2026-10-24", "display_dates": "Oct 24–25", "note": "11am–5pm both days, 450+ vendors — Pokémon, sports, One Piece, Yu-Gi-Oh" },
+    { "name": "Pokémon, Sports Cards & More", "venue": "Prince Waikiki", "start_date": "2026-10-25", "display_dates": "Oct 25", "note": "10am–5pm" },
+    { "name": "Urban Soccer Hawaii Card Show", "venue": "218 Mohonua Pl, Honolulu", "start_date": "2026-10-31", "display_dates": "Oct 31", "note": "Second confirmed date at this venue, found this run" }
   ],
-  "buyList": [],
-  "buyListNote": "No picks yet under the new strategy (added 2026-09-14) — the next scheduled run generates the first batch across whichever product types are toggled on above.",
+  "buyList": [
+    { "card": "Charizard ex", "type": "single", "set": "Scarlet & Violet: 151 #006/165", "targetPrice": 7.21, "marketPrice": 11.34, "expectedROI": "37%", "sellBy": "2026-10-05", "thesis": "One of the highest-print-run sets ever made — PSA pop 5,455, floods vendor mid-tier binders. No specific catalyst, flexible window.", "source": "Buy: TCGplayer holofoil market. Sell: recent NM sold comp, Sports Card Investor." },
+    { "card": "Radiant Charizard", "type": "single", "set": "Pokémon GO #011/078", "targetPrice": 13.00, "marketPrice": 19.31, "expectedROI": "29%", "sellBy": "2026-10-05", "thesis": "Charizard-name chase pull from a mainstream 2022 set; PSA pop ~19,073 — effectively unlimited raw supply.", "source": "Buy: TCGplayer low listing. Sell: TCGplayer market." },
+    { "card": "Umbreon VMAX", "type": "single", "set": "Evolving Skies (SWSH07) #095/203, non-alt-art", "targetPrice": 22.21, "marketPrice": 29.99, "expectedROI": "18%", "sellBy": "2026-10-30", "thesis": "Catalyst: Umbreon ex Battle Deck releases 2026-10-30. \"Moonbreon\" mania is the hobby's top Eeveelution demand driver; this is the affordable, high-pop way that demand surfaces at vendor tables.", "source": "Buy: PokeInvest/TCGplayer. Sell: recent NM sold comp, Sports Card Investor." },
+    { "card": "Rayquaza VMAX", "type": "single", "set": "Evolving Skies (SWSH07) #111/203, full art", "targetPrice": 11.50, "marketPrice": 15.39, "expectedROI": "16%", "sellBy": "2026-09-28", "thesis": "Fan-favorite legendary from a best-selling set — common pull, no scarcity issue.", "source": "Buy: poke-collect.com listing. Sell: TCGplayer market." },
+    { "card": "Mew VMAX", "type": "single", "set": "Fusion Strike (SWSH08) #114/264, full art", "targetPrice": 16.03, "marketPrice": 21.13, "expectedROI": "15%", "sellBy": "2026-10-01", "thesis": "Top-tier mascot, common full-art pull. Mew/Mewtwo are also 30th Celebration chase promos — any hype spillover is a bonus, not the thesis.", "source": "Buy: TCGplayer market. Sell: recent NM sold comp, Sports Card Investor." },
+    { "card": "Espeon VMAX", "type": "single", "set": "Evolving Skies (SWSH07) #065/203, full art", "targetPrice": 12.95, "marketPrice": 16.45, "expectedROI": "11%", "sellBy": "2026-10-30", "thesis": "Catalyst: pairs with Umbreon above — Espeon ex Battle Deck also releases 2026-10-30. Same print-run liquidity as Umbreon.", "source": "Buy: TCGplayer low listing. Sell: TCGplayer market." },
+    { "card": "Radiant Charizard", "type": "slab", "grade": "PSA 9", "set": "Pokémon GO #011/078", "targetPrice": 25.00, "marketPrice": 38.00, "expectedROI": "32%", "sellBy": "2026-10-05", "thesis": "Caution: real eBay sold comps for this exact grade ranged widely ($10.50–$40) — data is thin. Target paying at/below $25; treat $38 as the current tracked ceiling, not a guarantee. Only slab pick that cleared the $50 cap with a defensible dual-sourced price this run.", "source": "Buy target: eBay sold-comp range. Sell: PokeInvest tracked PSA-9 market." }
+  ],
+  "buyListNote": "",
   "holdings": [],
   "giveaways": [
     { "name": "RaffledUp — 30th Celebration ETB entry", "flag": "Paid raffle, not a free giveaway", "note": "Entry fee required; seller reputation not verified. Flagged, not recommended." }
