@@ -6,19 +6,36 @@ export default {
       return json(await getState(env));
     }
 
-    if (url.pathname === '/api/toggle' && request.method === 'POST') {
-      const key = request.headers.get('X-Admin-Key');
-      if (!key || key !== env.ADMIN_KEY) {
-        return json({ error: 'Unauthorized' }, 401);
+    if (url.pathname === '/api/card-image' && request.method === 'GET') {
+      const name = url.searchParams.get('name');
+      const set = url.searchParams.get('set') || '';
+      if (!name) return json({ image: null });
+      const q = set ? `name:"${name}" set.name:"${set}"` : `name:"${name}"`;
+      try {
+        const apiRes = await fetch(`https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=1`);
+        if (!apiRes.ok) return json({ image: null });
+        const data = await apiRes.json();
+        const card = data.data && data.data[0];
+        return json({ image: card ? card.images.small : null });
+      } catch (e) {
+        return json({ image: null });
       }
-      const body = await request.json().catch(() => null);
-      if (!body || !['sealed', 'rawSingles', 'slabs'].includes(body.type) || typeof body.value !== 'boolean') {
-        return json({ error: 'Bad request' }, 400);
+    }
+
+    if (url.pathname === '/api/toggle') {
+      if (request.method === 'GET') {
+        return Response.redirect(url.origin + '/', 302);
       }
-      const state = await getState(env);
-      state[body.type] = body.value;
-      await env.STATE_KV.put('productTypes', JSON.stringify(state));
-      return json(state);
+      if (request.method === 'POST') {
+        const body = await request.json().catch(() => null);
+        if (!body || !['sealed', 'rawSingles', 'slabs'].includes(body.type) || typeof body.value !== 'boolean') {
+          return json({ error: 'Bad request' }, 400);
+        }
+        const state = await getState(env);
+        state[body.type] = body.value;
+        await env.STATE_KV.put('productTypes', JSON.stringify(state));
+        return json(state);
+      }
     }
 
     return env.ASSETS.fetch(request);
