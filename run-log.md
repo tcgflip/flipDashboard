@@ -4,6 +4,21 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-14 — Daily quick-check (third same-day run)
+
+**Scope:** Scheduled daily quick-check fired a third time today (after two earlier quick-checks and the weekly deep dive, all below) — flagging the repeated same-day cadence again for Ryan, since nothing in this session shows or controls the underlying schedule. Ran the same lightweight scope regardless: imminent events, price sanity-check, giveaway scan.
+
+**Checked:**
+- Bayview Night Market (tomorrow, Sept 15) — re-confirmed still on via WebSearch, same Kāneʻohe venue, no change.
+- Aloha Card Shop 30th Celebration listings — still none confirmed, still 2 days from the Sept 16 launch, unchanged.
+- Rayquaza VMAX price flag — attempted a direct WebFetch to pokescope.app to resolve the standing $15.39-vs-$10.31 conflict; still EGRESS_BLOCKED in this environment (same restriction flagged in prior runs), so the conflict remains unresolved. Flag stands, no change to the pick.
+- New giveaways: none found — one non-giveaway event turned up (Aloha Comic Con Card Pavilion, Hawaii Convention Center) but it was dated Sept 12, already past, and wasn't added.
+- Holdings: nothing to advise on — everything is still Proposed.
+
+**Files updated:** `holdings-log.md` (this check's note), `data.json` (no content changes — nothing material to rebuild), `run-log.md` (this entry).
+
+---
+
 ## 2026-09-14 — Daily quick-check (second same-day run, ~4 hours after the quick-check below)
 
 **Scope:** Scheduled daily quick-check fired again the same calendar day as the entry below (first quick-check + weekly deep dive) — same lightweight scope per `instructions.md`: imminent events, price sanity-check, giveaway scan. Noting the same-day repeat here in case the schedule is firing more often than once/day; nothing in this session shows the underlying cadence, so flagging for Ryan's awareness rather than assuming it's a bug.
