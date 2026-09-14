@@ -6,8 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#14213D">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='36' fill='%2314213D'/%3E%3Ctext x='90' y='120' font-family='Georgia,serif' font-size='84' fill='%23E3A857' text-anchor='middle'%3EWL%3C/text%3E%3C/svg%3E">
-<title>Windward Ledger</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='36' fill='%2314213D'/%3E%3Ctext x='90' y='120' font-family='Georgia,serif' font-size='84' fill='%23E3A857' text-anchor='middle'%3EPF%3C/text%3E%3C/svg%3E">
+<title>Poke Fips</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -23,10 +23,7 @@
     padding-bottom:calc(72px + env(safe-area-inset-bottom));
   }
   h1,h2,.num{font-family:'Fraunces',serif;}
-  header{
-    padding:calc(24px + env(safe-area-inset-top)) 24px 16px;
-    border-bottom:1px solid var(--hairline);
-  }
+  header{ padding:calc(24px + env(safe-area-inset-top)) 24px 16px; border-bottom:1px solid var(--hairline); }
   h1{font-size:26px; font-weight:600; margin:0 0 4px;}
   #updated{margin:8px 0 0; color:var(--muted); font-size:13px;}
   main{max-width:640px; margin:0 auto; padding:0 20px;}
@@ -76,7 +73,7 @@
 </head>
 <body>
   <header>
-    <h1>Poke Flips</h1>
+    <h1>Poke Fips</h1>
     <p id="updated">Loading…</p>
   </header>
   <main>
@@ -91,7 +88,7 @@
     </section>
     <section id="screen-owned" class="screen">
       <h2>Owned</h2>
-      <div id="holdings-list"></div>
+      <div id="holdings-list"><p class="empty">Loading…</p></div>
     </section>
     <section id="screen-events" class="screen">
       <h2>Upcoming shows</h2>
@@ -118,7 +115,7 @@
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const TYPE_LABELS = { sealed: 'Sealed', single: 'Raw single', slab: 'Slab' };
 const TOGGLE_LABELS = { sealed: 'Sealed', rawSingles: 'Raw singles', slabs: 'Slabs' };
-let adminKey = localStorage.getItem('wl_admin_key') || '';
+let holdingsLoaded = false;
 
 document.querySelectorAll('.tabbar button').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -130,6 +127,10 @@ document.querySelectorAll('.tabbar button').forEach(btn => {
       document.getElementById('screen-buylist2').classList.add('active');
     } else {
       document.getElementById('screen-' + btn.dataset.screen).classList.add('active');
+    }
+    if (btn.dataset.screen === 'owned' && !holdingsLoaded) {
+      holdingsLoaded = true;
+      loadHoldings();
     }
   });
 });
@@ -146,25 +147,14 @@ function tcgplayerUrl(name, set) {
 }
 
 async function toggleType(type, current) {
-  if (!adminKey) {
-    adminKey = prompt('Enter your PIN to change settings:') || '';
-    if (!adminKey) return;
-  }
   try {
     const res = await fetch('/api/toggle', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type, value: !current })
     });
-    if (res.status === 401) {
-      alert('Incorrect PIN.');
-      adminKey = '';
-      localStorage.removeItem('wl_admin_key');
-      return;
-    }
-    const state = await res.json();
-    localStorage.setItem('wl_admin_key', adminKey);
-    renderStrategy(state);
+    if (!res.ok) throw new Error('failed');
+    renderStrategy(await res.json());
   } catch (e) {
     alert('Could not save — check your connection and try again.');
   }
@@ -180,13 +170,47 @@ function renderStrategy(types) {
   });
 }
 
-Promise.all([
-  fetch('./data.json?_=' + Date.now()).then(r => r.json()),
-  fetch('/api/state').then(r => r.ok ? r.json() : null).catch(() => null)
-]).then(([data, liveState]) => {
-  if (liveState) data.strategy.productTypes = liveState;
-  render(data);
-}).catch(() => { document.getElementById('updated').textContent = 'Could not load data.'; });
+async function loadHoldings() {
+  const el = document.getElementById('holdings-list');
+  try {
+    const res = await fetch('/holdings.json?_=' + Date.now());
+    const ct = res.headers.get('content-type') || '';
+    if (!res.ok || !ct.includes('json')) throw new Error('not authorized');
+    const data = await res.json();
+    renderHoldings(data.holdings || []);
+  } catch (e) {
+    el.innerHTML = `<p class="empty">Sign in with your Google account to view your owned cards.</p>
+      <a class="tcg-link" href="/holdings.json">Sign in</a>`;
+  }
+}
+
+function renderHoldings(holdings) {
+  const el = document.getElementById('holdings-list');
+  if (!holdings.length) {
+    el.innerHTML = '<p class="empty">Nothing bought yet. Once you pick up a card from the buy list, it shows up here with a hold/sell verdict each run.</p>';
+    return;
+  }
+  el.innerHTML = holdings.map(h => {
+    const img = cardImageUrl(h.cardId);
+    const verdictClass = h.verdict === 'sell' ? 'verdict-sell' : h.verdict === 'watch' ? 'verdict-watch' : 'verdict-hold';
+    const verdictLabel = h.verdict === 'sell' ? 'Sell now' : h.verdict === 'watch' ? 'Watch' : 'Hold';
+    return `<div class="buy-row"><div class="buy-body">
+      ${img ? `<img class="card-img" src="${img}" alt="${h.card}" loading="lazy">` : ''}
+      <div class="buy-main">
+        <div class="item-name">${h.card}${h.set ? ' · ' + h.set : ''}</div>
+        <div class="item-note">Bought $${h.buyPrice != null ? h.buyPrice.toFixed(2) : '—'}${h.buyDate ? ' on ' + h.buyDate : ''}</div>
+        <div class="verdict ${verdictClass}">${verdictLabel}${h.currentMarketPrice != null ? ' · mkt $' + h.currentMarketPrice.toFixed(2) : ''}</div>
+        <div class="thesis">${h.recommendation || ''}</div>
+        <a class="tcg-link" href="${tcgplayerUrl(h.card, h.set)}" target="_blank" rel="noopener">View on TCGplayer</a>
+      </div>
+    </div></div>`;
+  }).join('');
+}
+
+fetch('./data.json?_=' + Date.now())
+  .then(r => r.json())
+  .then(render)
+  .catch(() => { document.getElementById('updated').textContent = 'Could not load data.'; });
 
 function render(data) {
   document.getElementById('updated').textContent = 'Updated ' + data.generated_at;
@@ -244,27 +268,6 @@ function render(data) {
   giveEl.innerHTML = data.giveaways.length
     ? data.giveaways.map(g => `<div class="warn"><div class="item-name">${g.name}</div><div class="tag">${g.flag}</div><div class="item-note">${g.note}</div></div>`).join('')
     : '';
-
-  const holdingsEl = document.getElementById('holdings-list');
-  if (!data.holdings.length) {
-    holdingsEl.innerHTML = '<p class="empty">Nothing bought yet. Once you pick up a card from the buy list, it shows up here with a hold/sell verdict each run.</p>';
-  } else {
-    holdingsEl.innerHTML = data.holdings.map(h => {
-      const img = cardImageUrl(h.cardId);
-      const verdictClass = h.verdict === 'sell' ? 'verdict-sell' : h.verdict === 'watch' ? 'verdict-watch' : 'verdict-hold';
-      const verdictLabel = h.verdict === 'sell' ? 'Sell now' : h.verdict === 'watch' ? 'Watch' : 'Hold';
-      return `<div class="buy-row"><div class="buy-body">
-        ${img ? `<img class="card-img" src="${img}" alt="${h.card}" loading="lazy">` : ''}
-        <div class="buy-main">
-          <div class="item-name">${h.card}${h.set ? ' · ' + h.set : ''}</div>
-          <div class="item-note">Bought $${h.buyPrice != null ? h.buyPrice.toFixed(2) : '—'}${h.buyDate ? ' on ' + h.buyDate : ''}</div>
-          <div class="verdict ${verdictClass}">${verdictLabel}${h.currentMarketPrice != null ? ' · mkt $' + h.currentMarketPrice.toFixed(2) : ''}</div>
-          <div class="thesis">${h.recommendation || ''}</div>
-          <a class="tcg-link" href="${tcgplayerUrl(h.card, h.set)}" target="_blank" rel="noopener">View on TCGplayer</a>
-        </div>
-      </div></div>`;
-    }).join('');
-  }
 }
 </script>
 </body>
