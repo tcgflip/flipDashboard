@@ -44,8 +44,8 @@ Only recommend modern cards:
 ### Retired
 The $5–$20 / 35–40% ROI "singles-only pilot" from 2026-09-13 is retired. Its three picks (Espeon-GX sm1-61, Umbreon bw5-61, Sylveon xy3-72) don't qualify under the modern-only rule (all pre-2020) and are now Passed in `holdings-log.md`.
 
-## Live settings API (added 2026-09-14)
-At the start of every run, GET https://flipdashboard.tcgflip.workers.dev/api/state to read the current live toggle settings — this reflects what Ryan has tapped on his phone since the last run and takes priority over whatever was last committed. Use it to decide which categories to research, and write the same values into data.json's strategy.productTypes so the display stays in sync. Don't overwrite the live KV state yourself — that endpoint is read-only from the routine's side.
+## Product type toggles (updated — routine-side polling isn't possible)
+The routine's sandboxed environment can't reach flipdashboard.tcgflip.workers.dev's live settings API (same network restriction that blocks pricing APIs). Toggles on the dashboard are a phone-side display filter only — they don't change what gets researched. Keep researching sealed, raw singles, and slabs every run regardless of toggle state. If Ryan wants a category dropped from research entirely (not just hidden), that's a direct edit to this file, not something read live.
 
 ## Card images & TCGplayer links
 For every buyList and holdings entry, include a "cardId" field in pokemontcg.io's ID format (e.g. "sv1-201") whenever you're confident of it — the dashboard builds the card image from images.pokemontcg.io/{setId}/{number}.png automatically. Leave it out rather than guess; a missing image is fine, a wrong one looks broken.
