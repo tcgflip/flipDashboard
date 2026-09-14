@@ -34,6 +34,11 @@
   section{padding:28px 4px;}
   section + section{border-top:1px solid var(--hairline);}
   h2{font-size:20px; font-weight:600; margin:0 0 16px;}
+  .pill-row{display:flex; gap:20px; flex-wrap:wrap;}
+  .pill{display:flex; align-items:center; gap:8px; font-size:14px;}
+  .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
+  .dot.on{background:var(--gold);}
+  .dot.off{background:transparent; border:1px solid var(--muted);}
   .row{display:flex; gap:16px; padding:14px 0;}
   .row + .row{border-top:1px solid var(--hairline);}
   .date-badge{flex:0 0 52px; text-align:center;}
@@ -66,6 +71,10 @@
   </header>
   <main>
     <section>
+      <h2>Strategy</h2>
+      <div id="strategy-list" class="pill-row"></div>
+    </section>
+    <section>
       <h2>Upcoming shows</h2>
       <div id="shows-list"></div>
     </section>
@@ -86,6 +95,8 @@
 
 <script>
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const TYPE_LABELS = { sealed: 'Sealed', single: 'Raw single', slab: 'Slab' };
+const TOGGLE_LABELS = { sealed: 'Sealed', rawSingles: 'Raw singles', slabs: 'Slabs' };
 
 fetch('./data.json?_=' + Date.now())
   .then(r => r.json())
@@ -95,7 +106,12 @@ fetch('./data.json?_=' + Date.now())
 function render(data) {
   document.getElementById('updated').textContent = 'Updated ' + data.generated_at;
 
-  const shows = [...data.shows].sort((a,b) => new Date(a.start_date) - new Date(b.start_date));
+  const typesEl = document.getElementById('strategy-list');
+  typesEl.innerHTML = Object.entries(data.strategy.productTypes).map(([k, v]) => `
+    <span class="pill"><span class="dot ${v ? 'on' : 'off'}"></span>${TOGGLE_LABELS[k] || k} ${v ? 'on' : 'off'}</span>
+  `).join('');
+
+  const shows = [...data.shows].sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
   const showsEl = document.getElementById('shows-list');
   showsEl.innerHTML = shows.map(s => {
     const d = new Date(s.start_date + 'T00:00:00');
@@ -118,23 +134,29 @@ function render(data) {
   }).join('');
 
   const buyEl = document.getElementById('buylist-list');
-  buyEl.innerHTML = data.buyList.map(b => `
-    <div class="buy-row">
-      <div class="buy-head">
-        <div>
-          <div class="item-name">${b.card}</div>
-          <div class="item-note">${b.set}</div>
+  if (!data.buyList.length) {
+    buyEl.innerHTML = `<p class="empty">${data.buyListNote || 'No picks right now.'}</p>`;
+  } else {
+    buyEl.innerHTML = data.buyList.map(b => {
+      const typeLabel = TYPE_LABELS[b.type] || b.type || '';
+      const secondary = b.ev != null ? `EV $${b.ev.toFixed(2)}` : (b.marketPrice != null ? `mkt $${b.marketPrice.toFixed(2)}` : '');
+      return `<div class="buy-row">
+        <div class="buy-head">
+          <div>
+            <div class="item-name">${b.card}${b.grade ? ' · ' + b.grade : ''}</div>
+            <div class="item-note">${typeLabel}${b.set ? ' · ' + b.set : ''}</div>
+          </div>
+          <div style="text-align:right;">
+            <span class="num price">$${b.targetPrice.toFixed(2)}</span>
+            ${secondary ? `<span class="market">${secondary}</span>` : ''}
+            <div class="roi">${b.expectedROI} net · sell by ${b.sellBy}</div>
+          </div>
         </div>
-        <div style="text-align:right;">
-          <span class="num price">$${b.targetPrice.toFixed(2)}</span>
-          <span class="market">mkt $${b.marketPrice.toFixed(2)}</span>
-          <div class="roi">${b.expectedROI} net · sell by ${b.sellBy}</div>
-        </div>
-      </div>
-      <div class="thesis">${b.thesis}</div>
-      <span class="source">${b.source}</span>
-    </div>
-  `).join('');
+        <div class="thesis">${b.thesis}</div>
+        <span class="source">${b.source}</span>
+      </div>`;
+    }).join('');
+  }
 
   const holdingsEl = document.getElementById('holdings-list');
   holdingsEl.innerHTML = data.holdings.length
