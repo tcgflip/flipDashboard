@@ -4,6 +4,24 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-14 — Daily quick-check (second run today)
+
+**Scope:** Lightweight spot-check per `instructions.md` — imminent events, a price sanity-check on current buy-list picks, and a scan for new giveaways.
+
+**Checked:**
+- Live settings API (`GET /api/state`) — unreachable, `flipdashboard.tcgflip.workers.dev` blocked (EGRESS_BLOCKED), same as `tcgplayer.com`/`pokescope.app` and everything else already noted in `context.md`'s network section. `data.json`'s `strategy.productTypes` left unchanged (all three toggles on) since the live state couldn't be read. This is the third consecutive run with this domain blocked — flagged in `context.md` as a persistent issue worth raising with Ryan.
+- Rayquaza VMAX price conflict (flagged in this morning's check): found two more sources — TCGplayer market itself $5.18, TCG Stacked $5.27 — both far below the $15.39 this pick's 16% ROI thesis relied on. With PokeScope's $10.31 from this morning, that's 3 of 4 sources clustering $5-10, only one ($15.39) supporting the original math. At the $11.50 buy target this is now more likely a loss than a gain — **pulled from the buy list** (moved to Passed in `holdings-log.md`) rather than carried forward on unreliable data.
+- Bayview Night Market (tonight, Sept 15) — reconfirmed still on via WebSearch, no change.
+- Aloha Card Shop 30th Celebration listings — still unconfirmed, 2 days out from the Sept 16 launch, unchanged.
+- New giveaways: none found.
+- Holdings: nothing to advise on — every remaining buy-list item is still Proposed, none confirmed Holding.
+
+**Note for next run:** `instructions.md`'s "cardId" requirement (added today) isn't yet reflected in the 6 remaining buy-list picks — none have a confirmed pokemontcg.io card ID. Didn't add them this run since the pokemontcg.io API is part of the current network block and I wasn't confident enough in the IDs to guess (instructions say leave blank rather than guess wrong). Worth a deliberate pass once network access is back.
+
+**Files updated:** `context.md` (network-block note, third consecutive run), `holdings-log.md` (Rayquaza VMAX pulled to Passed, daily-check note), `data.json` (Rayquaza VMAX removed from buyList), `run-log.md` (this entry).
+
+---
+
 ## 2026-09-14 — Daily quick-check (same day as the weekly deep dive below)
 
 **Scope:** Lightweight spot-check per `instructions.md` — imminent events, a price sanity-check on current buy-list picks, and a scan for new giveaways. Not a full re-run of the show calendar or a fresh EV pass (that happened in today's weekly deep dive, below).
