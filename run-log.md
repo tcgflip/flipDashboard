@@ -4,6 +4,22 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-14 — Daily quick-check (second same-day run, ~4 hours after the quick-check below)
+
+**Scope:** Scheduled daily quick-check fired again the same calendar day as the entry below (first quick-check + weekly deep dive) — same lightweight scope per `instructions.md`: imminent events, price sanity-check, giveaway scan. Noting the same-day repeat here in case the schedule is firing more often than once/day; nothing in this session shows the underlying cadence, so flagging for Ryan's awareness rather than assuming it's a bug.
+
+**Checked:**
+- Live settings API (`https://flipdashboard.tcgflip.workers.dev/api/state`, new as of today's `instructions.md` update) — blocked by this environment's egress proxy (EGRESS_BLOCKED), same restriction category as the pricing/calendar domains already flagged, now confirmed to cover the dashboard's own Worker domain too. Fell back to the already-committed `data.json` toggle values (sealed/rawSingles/slabs all on). Noted in `context.md`.
+- Bayview Night Market (tomorrow, Sept 15) — re-confirmed still on, no change.
+- Aloha Card Shop 30th Celebration listings — still none confirmed, still 2 days from the Sept 16 launch, unchanged.
+- Rayquaza VMAX price flag — re-checked, same unresolved $15.39 vs. $10.31 conflict as this morning's check, no new data either way.
+- New giveaways: none found.
+- Holdings: nothing to advise on — everything is still Proposed.
+
+**Files updated:** `context.md` (live-settings-API egress note), `holdings-log.md` (this check's note), `data.json` (no content changes — nothing material to rebuild), `run-log.md` (this entry).
+
+---
+
 ## 2026-09-14 — Daily quick-check (same day as the weekly deep dive below)
 
 **Scope:** Lightweight spot-check per `instructions.md` — imminent events, a price sanity-check on current buy-list picks, and a scan for new giveaways. Not a full re-run of the show calendar or a fresh EV pass (that happened in today's weekly deep dive, below).
