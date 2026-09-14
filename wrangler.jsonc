@@ -1,7 +1,12 @@
 {
   "name": "flipdashboard",
   "compatibility_date": "2026-09-14",
+  "main": "worker.js",
   "assets": {
-    "directory": "."
-  }
+    "directory": ".",
+    "binding": "ASSETS"
+  },
+  "kv_namespaces": [
+    { "binding": "STATE_KV", "id": "69b5afe08a6044f6a570e7a1a6cf5dde" }
+  ]
 }
