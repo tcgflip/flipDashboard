@@ -116,6 +116,7 @@ const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov
 const TYPE_LABELS = { sealed: 'Sealed', single: 'Raw single', slab: 'Slab' };
 const TOGGLE_LABELS = { sealed: 'Sealed', rawSingles: 'Raw singles', slabs: 'Slabs' };
 let holdingsLoaded = false;
+let currentData = null;
 
 document.querySelectorAll('.tabbar button').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -142,6 +143,10 @@ function cardImageUrl(cardId) {
   return `https://images.pokemontcg.io/${cardId.slice(0, idx)}/${cardId.slice(idx + 1)}.png`;
 }
 
+function tcgplayerUrl(name, set) {
+  return `https://www.tcgplayer.com/search/pokemon/product?productLineName=pokemon&q=${encodeURIComponent((name + ' ' + (set || '')).trim())}`;
+}
+
 async function resolveCardImage(name, set) {
   try {
     const res = await fetch(`/api/card-image?name=${encodeURIComponent(name)}&set=${encodeURIComponent(set || '')}`);
@@ -163,10 +168,6 @@ async function fillLookupImages() {
     const img = await resolveCardImage(el.dataset.name, el.dataset.set);
     if (img) el.src = img; else el.remove();
   }
-} 
-  
-function tcgplayerUrl(name, set) {
-  return `https://www.tcgplayer.com/search/pokemon/product?productLineName=pokemon&q=${encodeURIComponent((name + ' ' + (set || '')).trim())}`;
 }
 
 async function toggleType(type, current) {
@@ -176,10 +177,16 @@ async function toggleType(type, current) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type, value: !current })
     });
-    if (!res.ok) throw new Error('failed');
-    renderStrategy(await res.json());
+    const ct = res.headers.get('content-type') || '';
+    if (!res.ok || !ct.includes('json')) throw new Error('auth needed');
+    const state = await res.json();
+    currentData.strategy.productTypes = state;
+    renderStrategy(state);
+    renderBuyList(currentData);
   } catch (e) {
-    alert('Could not save — check your connection and try again.');
+    if (confirm('You may need to sign in first. Open sign-in now?')) {
+      window.location.href = '/api/toggle';
+    }
   }
 }
 
@@ -193,80 +200,18 @@ function renderStrategy(types) {
   });
 }
 
-async function loadHoldings() {
-  const el = document.getElementById('holdings-list');
-  try {
-    const res = await fetch('/holdings.json?_=' + Date.now());
-    const ct = res.headers.get('content-type') || '';
-    if (!res.ok || !ct.includes('json')) throw new Error('not authorized');
-    const data = await res.json();
-    renderHoldings(data.holdings || []);
-  } catch (e) {
-    el.innerHTML = `<p class="empty">Sign in with your Google account to view your owned cards.</p>
-      <a class="tcg-link" href="/holdings.json">Sign in</a>`;
-  }
-}
-
-function renderHoldings(holdings) {
-  const el = document.getElementById('holdings-list');
-  if (!holdings.length) {
-    el.innerHTML = '<p class="empty">Nothing bought yet. Once you pick up a card from the buy list, it shows up here with a hold/sell verdict each run.</p>';
-    return;
-  }
-  el.innerHTML = holdings.map(h => {
-    const img = cardImageUrl(h.cardId);
-    const verdictClass = h.verdict === 'sell' ? 'verdict-sell' : h.verdict === 'watch' ? 'verdict-watch' : 'verdict-hold';
-    const verdictLabel = h.verdict === 'sell' ? 'Sell now' : h.verdict === 'watch' ? 'Watch' : 'Hold';
-    return `<div class="buy-row"><div class="buy-body">
-      ${img ? `<img class="card-img" src="${img}" alt="${h.card}" loading="lazy">` : ''}
-      <div class="buy-main">
-        <div class="item-name">${h.card}${h.set ? ' · ' + h.set : ''}</div>
-        <div class="item-note">Bought $${h.buyPrice != null ? h.buyPrice.toFixed(2) : '—'}${h.buyDate ? ' on ' + h.buyDate : ''}</div>
-        <div class="verdict ${verdictClass}">${verdictLabel}${h.currentMarketPrice != null ? ' · mkt $' + h.currentMarketPrice.toFixed(2) : ''}</div>
-        <div class="thesis">${h.recommendation || ''}</div>
-        <a class="tcg-link" href="${tcgplayerUrl(h.card, h.set)}" target="_blank" rel="noopener">View on TCGplayer</a>
-      </div>
-    </div></div>`;
-  }).join('');
-}
-
-fetch('./data.json?_=' + Date.now())
-  .then(r => r.json())
-  .then(render)
-  .catch(() => { document.getElementById('updated').textContent = 'Could not load data.'; });
-
-function render(data) {
-  document.getElementById('updated').textContent = 'Updated ' + data.generated_at;
-  renderStrategy(data.strategy.productTypes);
-
-  const shows = [...data.shows].sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
-  document.getElementById('shows-list').innerHTML = shows.map(s => {
-    const d = new Date(s.start_date + 'T00:00:00');
-    const daysUntil = Math.ceil((d - new Date()) / 86400000);
-    const countdown = daysUntil > 1 ? `In ${daysUntil} days` : daysUntil === 1 ? 'Tomorrow' : daysUntil === 0 ? 'Today' : '';
-    const mapsUrl = 'https://maps.apple.com/?q=' + encodeURIComponent(s.venue);
-    return `<div class="row">
-      <div class="date-badge"><span class="day">${d.getDate()}</span><span class="month">${MONTHS[d.getMonth()]}</span></div>
-      <div>
-        <div class="item-name">${s.name}</div>
-        <div class="item-note">${s.venue} · ${s.display_dates}${countdown ? ' · ' + countdown : ''}</div>
-        <div class="item-note">${s.note}</div>
-        ${s.unconfirmed ? '<div class="tag">Unconfirmed</div>' : ''}
-        <a class="directions" href="${mapsUrl}">Directions</a>
-      </div>
-    </div>`;
-  }).join('');
-
+function renderBuyList(data) {
+  const typeMap = { sealed: 'sealed', single: 'rawSingles', slab: 'slabs' };
+  const visible = data.buyList.filter(b => data.strategy.productTypes[typeMap[b.type]] !== false);
   const buyEl = document.getElementById('buylist-list');
-  if (!data.buyList.length) {
-    buyEl.innerHTML = `<p class="empty">${data.buyListNote || 'No picks right now.'}</p>`;
+  if (!visible.length) {
+    buyEl.innerHTML = `<p class="empty">${data.buyList.length ? 'No picks match your current toggles.' : (data.buyListNote || 'No picks right now.')}</p>`;
   } else {
-    buyEl.innerHTML = data.buyList.map(b => {
-      const img = cardImageUrl(b.cardId);
+    buyEl.innerHTML = visible.map(b => {
       const typeLabel = TYPE_LABELS[b.type] || b.type || '';
       const secondary = b.ev != null ? `EV $${b.ev.toFixed(2)}` : (b.marketPrice != null ? `mkt $${b.marketPrice.toFixed(2)}` : '');
       return `<div class="buy-row"><div class="buy-body">
-        ${img ? `<img class="card-img" src="${img}" alt="${b.card}" loading="lazy">` : ''}
+        ${cardImageSlot(b.card, b.set, b.cardId)}
         <div class="buy-main">
           <div class="buy-head">
             <div>
@@ -291,6 +236,76 @@ function render(data) {
   giveEl.innerHTML = data.giveaways.length
     ? data.giveaways.map(g => `<div class="warn"><div class="item-name">${g.name}</div><div class="tag">${g.flag}</div><div class="item-note">${g.note}</div></div>`).join('')
     : '';
+
+  fillLookupImages();
+}
+
+async function loadHoldings() {
+  const el = document.getElementById('holdings-list');
+  try {
+    const res = await fetch('/holdings.json?_=' + Date.now());
+    const ct = res.headers.get('content-type') || '';
+    if (!res.ok || !ct.includes('json')) throw new Error('not authorized');
+    const data = await res.json();
+    renderHoldings(data.holdings || []);
+  } catch (e) {
+    el.innerHTML = `<p class="empty">Sign in with your Google account to view your owned cards.</p>
+      <a class="tcg-link" href="/holdings.json">Sign in</a>`;
+  }
+}
+
+function renderHoldings(holdings) {
+  const el = document.getElementById('holdings-list');
+  if (!holdings.length) {
+    el.innerHTML = '<p class="empty">Nothing bought yet. Once you pick up a card from the buy list, it shows up here with a hold/sell verdict each run.</p>';
+    return;
+  }
+  el.innerHTML = holdings.map(h => {
+    const verdictClass = h.verdict === 'sell' ? 'verdict-sell' : h.verdict === 'watch' ? 'verdict-watch' : 'verdict-hold';
+    const verdictLabel = h.verdict === 'sell' ? 'Sell now' : h.verdict === 'watch' ? 'Watch' : 'Hold';
+    return `<div class="buy-row"><div class="buy-body">
+      ${cardImageSlot(h.card, h.set, h.cardId)}
+      <div class="buy-main">
+        <div class="item-name">${h.card}${h.set ? ' · ' + h.set : ''}</div>
+        <div class="item-note">Bought $${h.buyPrice != null ? h.buyPrice.toFixed(2) : '—'}${h.buyDate ? ' on ' + h.buyDate : ''}</div>
+        <div class="verdict ${verdictClass}">${verdictLabel}${h.currentMarketPrice != null ? ' · mkt $' + h.currentMarketPrice.toFixed(2) : ''}</div>
+        <div class="thesis">${h.recommendation || ''}</div>
+        <a class="tcg-link" href="${tcgplayerUrl(h.card, h.set)}" target="_blank" rel="noopener">View on TCGplayer</a>
+      </div>
+    </div></div>`;
+  }).join('');
+  fillLookupImages();
+}
+
+fetch('./data.json?_=' + Date.now())
+  .then(r => r.json())
+  .then(render)
+  .catch(() => { document.getElementById('updated').textContent = 'Could not load data.'; });
+
+function render(data) {
+  currentData = data;
+  document.getElementById('updated').textContent = 'Updated ' + data.generated_at;
+  renderStrategy(data.strategy.productTypes);
+
+  const shows = [...data.shows].sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+  document.getElementById('shows-list').innerHTML = shows.map(s => {
+    const d = new Date(s.start_date + 'T00:00:00');
+    const daysUntil = Math.ceil((d - new Date()) / 86400000);
+    const countdown = daysUntil > 1 ? `In ${daysUntil} days` : daysUntil === 1 ? 'Tomorrow' : daysUntil === 0 ? 'Today' : '';
+    const mapsUrl = 'https://maps.apple.com/?q=' + encodeURIComponent(s.venue);
+    return `<div class="row">
+      <div class="date-badge"><span class="day">${d.getDate()}</span><span class="month">${MONTHS[d.getMonth()]}</span></div>
+      <div>
+        <div class="item-name">${s.name}</div>
+        <div class="item-note">${s.venue} · ${s.display_dates}${countdown ? ' · ' + countdown : ''}</div>
+        <div class="item-note">${s.note}</div>
+        ${s.unconfirmed ? '<div class="tag">Unconfirmed</div>' : ''}
+        <a class="directions" href="${mapsUrl}">Directions</a>
+      </div>
+    </div>`;
+  }).join('');
+
+  renderBuyList(data);
 }
 </script>
 </body>
