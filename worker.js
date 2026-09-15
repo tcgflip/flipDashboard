@@ -3,7 +3,8 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === '/api/state' && request.method === 'GET') {
-      return json(await getState(env));
+      const [productTypes, maxPrice] = await Promise.all([getState(env), getMaxPrice(env)]);
+      return json({ productTypes, maxPrice });
     }
 
     if (url.pathname === '/api/card-image' && request.method === 'GET') {
@@ -38,6 +39,20 @@ export default {
       }
     }
 
+    if (url.pathname === '/api/price') {
+      if (request.method === 'GET') {
+        return Response.redirect(url.origin + '/', 302);
+      }
+      if (request.method === 'POST') {
+        const body = await request.json().catch(() => null);
+        if (!body || (body.maxPrice !== null && (typeof body.maxPrice !== 'number' || body.maxPrice <= 0))) {
+          return json({ error: 'Bad request' }, 400);
+        }
+        await env.STATE_KV.put('maxPrice', JSON.stringify(body.maxPrice));
+        return json({ maxPrice: body.maxPrice });
+      }
+    }
+
     return env.ASSETS.fetch(request);
   }
 };
@@ -45,6 +60,11 @@ export default {
 async function getState(env) {
   const stored = await env.STATE_KV.get('productTypes');
   return stored ? JSON.parse(stored) : { sealed: true, rawSingles: true, slabs: true };
+}
+
+async function getMaxPrice(env) {
+  const stored = await env.STATE_KV.get('maxPrice');
+  return stored ? JSON.parse(stored) : null;
 }
 
 function json(data, status = 200) {

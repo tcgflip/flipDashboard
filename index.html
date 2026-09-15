@@ -37,6 +37,9 @@
   .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
   .dot.on{background:var(--gold);}
   .dot.off{background:transparent; border:1px solid var(--muted);}
+  .price-cap-field{margin-top:14px;}
+  .price-cap-field label{font-size:13px; color:var(--muted); display:block; margin-bottom:6px;}
+  .price-cap-field input{background:var(--navy-light); border:1px solid var(--hairline); color:var(--cream); border-radius:8px; padding:8px 12px; font-family:inherit; font-size:14px; width:120px;}
   .row{display:flex; gap:16px; padding:14px 0;}
   .row + .row{border-top:1px solid var(--hairline);}
   .date-badge{flex:0 0 52px; text-align:center;}
@@ -80,6 +83,10 @@
     <section id="screen-buylist" class="screen active">
       <h2>Strategy</h2>
       <div id="strategy-list" class="pill-row"></div>
+      <div class="price-cap-field">
+        <label for="price-cap-input">Max price to show</label>
+        <input type="number" id="price-cap-input" placeholder="No limit" min="1">
+      </div>
     </section>
     <section id="screen-buylist2" class="screen active" style="border-top:1px solid var(--hairline);">
       <h2>Buy list</h2>
@@ -147,6 +154,11 @@ function tcgplayerUrl(name, set) {
   return `https://www.tcgplayer.com/search/pokemon/product?productLineName=pokemon&q=${encodeURIComponent((name + ' ' + (set || '')).trim())}`;
 }
 
+function parseROI(str) {
+  const m = String(str || '').match(/-?\d+(\.\d+)?/);
+  return m ? parseFloat(m[0]) : -Infinity;
+}
+
 async function resolveCardImage(name, set) {
   try {
     const res = await fetch(`/api/card-image?name=${encodeURIComponent(name)}&set=${encodeURIComponent(set || '')}`);
@@ -190,6 +202,25 @@ async function toggleType(type, current) {
   }
 }
 
+async function setPriceCap(value) {
+  try {
+    const res = await fetch('/api/price', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ maxPrice: value })
+    });
+    const ct = res.headers.get('content-type') || '';
+    if (!res.ok || !ct.includes('json')) throw new Error('auth needed');
+    const data = await res.json();
+    currentData.strategy.maxPrice = data.maxPrice;
+    renderBuyList(currentData);
+  } catch (e) {
+    if (confirm('You may need to sign in first. Open sign-in now?')) {
+      window.location.href = '/api/price';
+    }
+  }
+}
+
 function renderStrategy(types) {
   const el = document.getElementById('strategy-list');
   el.innerHTML = Object.entries(types).map(([k, v]) => `
@@ -200,12 +231,21 @@ function renderStrategy(types) {
   });
 }
 
+function renderPriceCap(maxPrice) {
+  const input = document.getElementById('price-cap-input');
+  input.value = maxPrice != null ? maxPrice : '';
+  input.onchange = () => setPriceCap(input.value ? Number(input.value) : null);
+}
+
 function renderBuyList(data) {
   const typeMap = { sealed: 'sealed', single: 'rawSingles', slab: 'slabs' };
-  const visible = data.buyList.filter(b => data.strategy.productTypes[typeMap[b.type]] !== false);
+  const maxPrice = data.strategy.maxPrice;
+  const visible = data.buyList
+    .filter(b => data.strategy.productTypes[typeMap[b.type]] !== false && (maxPrice == null || b.targetPrice <= maxPrice))
+    .sort((a, b) => parseROI(b.expectedROI) - parseROI(a.expectedROI));
   const buyEl = document.getElementById('buylist-list');
   if (!visible.length) {
-    buyEl.innerHTML = `<p class="empty">${data.buyList.length ? 'No picks match your current toggles.' : (data.buyListNote || 'No picks right now.')}</p>`;
+    buyEl.innerHTML = `<p class="empty">${data.buyList.length ? 'No picks match your current filters.' : (data.buyListNote || 'No picks right now.')}</p>`;
   } else {
     buyEl.innerHTML = visible.map(b => {
       const typeLabel = TYPE_LABELS[b.type] || b.type || '';
@@ -277,15 +317,22 @@ function renderHoldings(holdings) {
   fillLookupImages();
 }
 
-fetch('./data.json?_=' + Date.now())
-  .then(r => r.json())
-  .then(render)
-  .catch(() => { document.getElementById('updated').textContent = 'Could not load data.'; });
+Promise.all([
+  fetch('./data.json?_=' + Date.now()).then(r => r.json()),
+  fetch('/api/state').then(r => r.ok ? r.json() : null).catch(() => null)
+]).then(([data, liveState]) => {
+  if (liveState) {
+    data.strategy.productTypes = liveState.productTypes;
+    data.strategy.maxPrice = liveState.maxPrice;
+  }
+  render(data);
+}).catch(() => { document.getElementById('updated').textContent = 'Could not load data.'; });
 
 function render(data) {
   currentData = data;
   document.getElementById('updated').textContent = 'Updated ' + data.generated_at;
   renderStrategy(data.strategy.productTypes);
+  renderPriceCap(data.strategy.maxPrice != null ? data.strategy.maxPrice : null);
 
   const shows = [...data.shows].sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
   document.getElementById('shows-list').innerHTML = shows.map(s => {
