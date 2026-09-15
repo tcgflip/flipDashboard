@@ -31,8 +31,8 @@ export default {
     }
 
     if (url.pathname === '/api/state' && request.method === 'GET') {
-      const [productTypes, maxPrice] = await Promise.all([getState(env), getMaxPrice(env)]);
-      return json({ productTypes, maxPrice });
+      const [productTypes, priceRange] = await Promise.all([getState(env), getPriceRange(env)]);
+      return json({ productTypes, priceRange });
     }
 
     if (url.pathname === '/api/card-image' && request.method === 'GET') {
@@ -44,10 +44,15 @@ export default {
       // is just "Evolving Skies", so strip the set-code/card-number/variant tail.
       const set = rawSet.replace(/\s*\([^)]*\)/g, '').replace(/\s*#.*$/, '').trim();
       try {
-        const image = (await lookupCardImage(name, set)) || (set ? await lookupCardImage(name, '') : null);
-        return json({ image });
+        const withSet = await lookupCardImage(name, set);
+        const fallback = !withSet.image && set ? await lookupCardImage(name, '') : null;
+        const result = withSet.image ? withSet : (fallback || withSet);
+        return json({
+          image: result.image,
+          debug: { name, set, status: withSet.status, fallbackTried: !!fallback, fallbackStatus: fallback?.status }
+        });
       } catch (e) {
-        return json({ image: null });
+        return json({ image: null, debug: { name, set, error: String(e) } });
       }
     }
 
@@ -64,11 +69,14 @@ export default {
 
     if (url.pathname === '/api/price' && request.method === 'POST') {
       const body = await request.json().catch(() => null);
-      if (!body || (body.maxPrice !== null && (typeof body.maxPrice !== 'number' || body.maxPrice <= 0))) {
+      const validBound = (v) => v === null || v === undefined || (typeof v === 'number' && v >= 0 && v <= 1000);
+      if (!body || !validBound(body.minPrice) || !validBound(body.maxPrice) ||
+          (typeof body.minPrice === 'number' && typeof body.maxPrice === 'number' && body.minPrice > body.maxPrice)) {
         return json({ error: 'Bad request' }, 400);
       }
-      await env.STATE_KV.put('maxPrice', JSON.stringify(body.maxPrice));
-      return json({ maxPrice: body.maxPrice });
+      const priceRange = { min: body.minPrice ?? null, max: body.maxPrice ?? null };
+      await env.STATE_KV.put('priceRange', JSON.stringify(priceRange));
+      return json({ priceRange });
     }
 
     return env.ASSETS.fetch(request);
@@ -193,10 +201,10 @@ function cookie(name, value, opts = {}) {
 async function lookupCardImage(name, set) {
   const q = set ? `name:"${name}" set.name:"${set}"` : `name:"${name}"`;
   const apiRes = await fetch(`https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=1`);
-  if (!apiRes.ok) return null;
+  if (!apiRes.ok) return { image: null, status: apiRes.status };
   const data = await apiRes.json();
   const card = data.data && data.data[0];
-  return card ? card.images.small : null;
+  return { image: card ? card.images.small : null, status: apiRes.status };
 }
 
 // ---- Strategy state ----
@@ -206,9 +214,12 @@ async function getState(env) {
   return stored ? JSON.parse(stored) : { sealed: true, rawSingles: true, slabs: true };
 }
 
-async function getMaxPrice(env) {
-  const stored = await env.STATE_KV.get('maxPrice');
-  return stored ? JSON.parse(stored) : null;
+async function getPriceRange(env) {
+  const stored = await env.STATE_KV.get('priceRange');
+  if (stored) return JSON.parse(stored);
+  // Migrate the old single-value cap key from before min/max existed.
+  const legacyMax = await env.STATE_KV.get('maxPrice');
+  return { min: null, max: legacyMax ? JSON.parse(legacyMax) : null };
 }
 
 function json(data, status = 200) {

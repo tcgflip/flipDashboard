@@ -52,9 +52,23 @@
   .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
   .dot.on{background:var(--gold);}
   .dot.off{background:transparent; border:1px solid var(--text-faint);}
-  .price-cap-field{margin-top:14px;}
-  .price-cap-field label{font-size:13px; color:var(--text-dim); display:block; margin-bottom:6px;}
-  .price-cap-field input{background:var(--panel); border:1px solid var(--line-strong); color:var(--text); border-radius:8px; padding:8px 12px; font-family:'IBM Plex Mono',monospace; font-size:14px; width:120px;}
+  .price-range-field{margin-top:16px;}
+  .price-range-field .label{font-size:14px; font-weight:600; margin:0 0 2px;}
+  .price-range-field .hint{font-size:12px; color:var(--text-faint); margin:0 0 10px;}
+  .price-range-inputs{display:flex; align-items:center; gap:10px;}
+  .price-box{
+    display:flex; align-items:center; gap:4px; background:var(--panel);
+    border:1px solid var(--line-strong); border-radius:8px; padding:8px 10px;
+    flex:1; min-width:0;
+  }
+  .price-box .prefix{color:var(--text-faint); font-family:'IBM Plex Mono',monospace; font-size:14px;}
+  .price-box input{
+    background:none; border:none; color:var(--text); font-family:'IBM Plex Mono',monospace;
+    font-size:14px; width:100%; min-width:0; padding:0;
+  }
+  .price-box input:focus{outline:none;}
+  .price-box input::placeholder{color:var(--text-faint);}
+  .price-range-inputs .to{color:var(--text-faint); font-size:13px; flex-shrink:0;}
 
   .portfolio-stat{
     background:linear-gradient(180deg,var(--panel-2),var(--panel));
@@ -127,9 +141,20 @@
     <section id="screen-buylist" class="screen active">
       <h2>Strategy</h2>
       <div id="strategy-list" class="pill-row"></div>
-      <div class="price-cap-field">
-        <label for="price-cap-input">Max price to show</label>
-        <input type="number" id="price-cap-input" placeholder="No limit" min="1">
+      <div class="price-range-field">
+        <p class="label">Price range</p>
+        <p class="hint">Show picks within this range (inclusive) — research caps at $1,000/card</p>
+        <div class="price-range-inputs">
+          <div class="price-box">
+            <span class="prefix">$</span>
+            <input type="number" id="price-min-input" placeholder="Min" min="0" max="1000" inputmode="decimal">
+          </div>
+          <span class="to">to</span>
+          <div class="price-box">
+            <span class="prefix">$</span>
+            <input type="number" id="price-max-input" placeholder="1,000" min="0" max="1000" inputmode="decimal">
+          </div>
+        </div>
       </div>
     </section>
     <section id="screen-buylist2" class="screen active" style="border-top:1px solid var(--line);">
@@ -218,9 +243,15 @@ function formatShortDate(dateStr) {
 async function resolveCardImage(name, set) {
   try {
     const res = await fetch(`/api/card-image?name=${encodeURIComponent(name)}&set=${encodeURIComponent(set || '')}`);
-    if (!res.ok) return null;
-    return (await res.json()).image || null;
+    if (!res.ok) {
+      console.warn('[card-image] request failed', name, set, res.status);
+      return null;
+    }
+    const data = await res.json();
+    if (!data.image) console.warn('[card-image] no match', name, set, data.debug);
+    return data.image || null;
   } catch (e) {
+    console.warn('[card-image] error', name, set, e);
     return null;
   }
 }
@@ -260,16 +291,16 @@ async function toggleType(type, current) {
   renderBuyList(currentData);
 }
 
-async function setPriceCap(value) {
+async function setPriceRange(minPrice, maxPrice) {
   const res = await fetch('/api/price', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ maxPrice: value })
+    body: JSON.stringify({ minPrice, maxPrice })
   });
   if (!requireSession(res)) return;
   if (!res.ok) return;
   const data = await res.json();
-  currentData.strategy.maxPrice = data.maxPrice;
+  currentData.strategy.priceRange = data.priceRange;
   renderBuyList(currentData);
 }
 
@@ -283,17 +314,27 @@ function renderStrategy(types) {
   });
 }
 
-function renderPriceCap(maxPrice) {
-  const input = document.getElementById('price-cap-input');
-  input.value = maxPrice != null ? maxPrice : '';
-  input.onchange = () => setPriceCap(input.value ? Number(input.value) : null);
+function renderPriceRange(range) {
+  const minInput = document.getElementById('price-min-input');
+  const maxInput = document.getElementById('price-max-input');
+  minInput.value = range?.min != null ? range.min : '';
+  maxInput.value = range?.max != null ? range.max : '';
+  const commit = () => {
+    const min = minInput.value ? Math.min(Number(minInput.value), 1000) : null;
+    const max = maxInput.value ? Math.min(Number(maxInput.value), 1000) : null;
+    setPriceRange(min, max);
+  };
+  minInput.onchange = commit;
+  maxInput.onchange = commit;
 }
 
 function renderBuyList(data) {
   const typeMap = { sealed: 'sealed', single: 'rawSingles', slab: 'slabs' };
-  const maxPrice = data.strategy.maxPrice;
+  const { min: minPrice, max: maxPrice } = data.strategy.priceRange || {};
   const visible = data.buyList
-    .filter(b => data.strategy.productTypes[typeMap[b.type]] !== false && (maxPrice == null || b.targetPrice <= maxPrice))
+    .filter(b => data.strategy.productTypes[typeMap[b.type]] !== false &&
+      (minPrice == null || b.targetPrice >= minPrice) &&
+      (maxPrice == null || b.targetPrice <= maxPrice))
     .sort((a, b) => parseROI(b.expectedROI) - parseROI(a.expectedROI));
   const buyEl = document.getElementById('buylist-list');
   if (!visible.length) {
@@ -393,7 +434,7 @@ Promise.all([
 ]).then(([data, liveState]) => {
   if (liveState) {
     data.strategy.productTypes = liveState.productTypes;
-    data.strategy.maxPrice = liveState.maxPrice;
+    data.strategy.priceRange = liveState.priceRange;
   }
   render(data);
 }).catch(() => { document.getElementById('updated').textContent = 'Could not load data.'; });
@@ -402,7 +443,7 @@ function render(data) {
   currentData = data;
   document.getElementById('updated').textContent = 'Updated ' + data.generated_at;
   renderStrategy(data.strategy.productTypes);
-  renderPriceCap(data.strategy.maxPrice != null ? data.strategy.maxPrice : null);
+  renderPriceRange(data.strategy.priceRange);
 
   const shows = [...data.shows].sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
   document.getElementById('shows-list').innerHTML = shows.map(s => {
