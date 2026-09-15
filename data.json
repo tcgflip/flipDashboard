@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-09-14",
+  "generated_at": "2026-09-15",
   "strategy": {
     "productTypes": { "sealed": true, "rawSingles": true, "slabs": true },
     "sealedRule": "Only recommend sealed product where calculated box/pack EV exceeds current market price by 15%+",
-    "singlesSlabsRule": "Modern (2020 or later) only, popular and vendor-table-liquid, target buy price under $50, sorted by highest ROI",
+    "singlesSlabsRule": "Modern (2020 or later) only, popular and vendor-table-liquid, target buy price under $1,000, sorted by highest ROI",
     "holdPeriod": "Flexible, days–weeks, longer only with a real catalyst date"
   },
   "shows": [
