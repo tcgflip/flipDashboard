@@ -504,8 +504,11 @@ function render(data) {
   renderStrategy(data.strategy.productTypes);
   renderPriceRange(data.strategy.priceRange);
 
-  const shows = [...data.shows].sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
-  document.getElementById('shows-list').innerHTML = shows.map(s => {
+  const todayStart = new Date(new Date().toDateString());
+  const shows = data.shows
+    .filter(s => new Date((s.end_date || s.start_date) + 'T00:00:00') >= todayStart)
+    .sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+  document.getElementById('shows-list').innerHTML = shows.length ? shows.map(s => {
     const d = new Date(s.start_date + 'T00:00:00');
     const daysUntil = Math.ceil((d - new Date()) / 86400000);
     const countdown = daysUntil > 1 ? `In ${daysUntil} days` : daysUntil === 1 ? 'Tomorrow' : daysUntil === 0 ? 'Today' : '';
@@ -520,7 +523,7 @@ function render(data) {
         <a class="directions" href="${mapsUrl}">Directions</a>
       </div>
     </div>`;
-  }).join('');
+  }).join('') : '<p class="empty">No upcoming shows on the calendar right now.</p>';
 
   renderBuyList(data);
 }

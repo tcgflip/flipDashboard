@@ -4,6 +4,24 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-15 — Daily quick-check (scheduled, later same day)
+
+**Scope:** Scheduled daily quick-check, firing several hours after the out-of-band runs logged below (all also dated 2026-09-15). Standard lightweight scope per `instructions.md`: imminent events, price sanity-check, giveaway scan, holdings review, website interface pass.
+
+**Checked:**
+- Aloha Card Show (Sept 19-20, Blaisdell) — reconfirmed via WebSearch, dates/hours/admission unchanged.
+- Aloha Card Shop 30th Celebration listings — still unconfirmed, now 1 day out from the Sept 16 launch. Direct WebFetch to alohacardshop.com returned EGRESS_BLOCKED (newly confirmed blocked domain, added to `context.md`) — still needs a firsthand post-launch recheck, can't be verified from this environment.
+- Rayquaza VMAX price conflict ($15.39 vs. $10.31) — re-searched, same unresolved spread turned up, no new data either way. Flag stands, no change made.
+- Egress status — re-tested api.pokemontcg.io, still EGRESS_BLOCKED, consistent with every prior run.
+- New giveaways: none found.
+- Holdings: nothing to advise on — all items still Proposed.
+
+**Website interface pass:** Found a real (latent) bug — the Events tab had no mechanism to ever stop showing a card show once it had ended; a past multi-day show would linger in the list indefinitely with just a blank countdown instead of disappearing. Fixed: added an `end_date` field to every show entry in `data.json`, and a client-side filter in `app.html` that drops a show once its `end_date` has passed (falling back to `start_date` for single-day shows), plus an empty-state message for the (currently hypothetical) case where the calendar is clear.
+
+**Files updated:** `context.md` (egress note — alohacardshop.com confirmed blocked), `holdings-log.md` (this check's note), `public/data.json` (`end_date` added to all 10 shows), `public/app.html` (past-show filtering + empty state), `run-log.md` (this entry).
+
+---
+
 ## 2026-09-15 — Thesis fact-check + bullet-format conversion (out-of-band, Ryan-requested)
 
 **Scope:** Ryan asked to double-check the buy list's thesis text accuracy and reformat it as short "top reasons" bullets instead of prose.
