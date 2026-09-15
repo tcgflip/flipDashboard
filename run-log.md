@@ -18,6 +18,22 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-15 — Community demand signal added (out-of-band, Ryan-requested)
+
+**Scope:** Ryan asked to pull Reddit data to gauge community card/rarity preference (example: gold/rainbow rares being less desired) and factor that into picks, ideally getting ahead of cards becoming popular.
+
+**Tool limitation confirmed:** WebFetch is blocked entirely for reddit.com; WebSearch doesn't surface real Reddit thread/comment content even when explicitly targeting a subreddit. Reddit isn't usable as a direct source with this routine's tools.
+
+**Substitute found and it confirms Ryan's instinct:** Bleeding Cool's "Pokémon TCG Value Watch" series and multiple 2026 collector guides show Illustration Rares/Special Illustration Rares have clearly overtaken gold Hyper Rares/rainbow Secret Rares in collector preference since Scarlet & Violet began. Added as a standing rarity-tier preference in `instructions.md`, favoring SIRs/alt-art and iconic mascots over gold/rainbow when price and liquidity are comparable.
+
+**Applied immediately:** Pikachu VMAX PSA 10 (a rainbow secret) is the one current pick in direct tension with this — reworded its thesis to own that honestly rather than pitch the rarity as a strength. Kept the pick (brand-mascot power is a real counter-argument) but flagged it for Ryan's own judgment.
+
+**"Ahead of the curve" guidance added:** two real (not guaranteed) leading indicators documented — set-reveal reaction before a set releases, and early tournament/competitive relevance.
+
+**Files updated:** `instructions.md` (new community demand signal section), `holdings-log.md` (new dated note), `public/data.json` (Pikachu VMAX thesis reworded), `run-log.md` (this entry).
+
+---
+
 ## 2026-09-15 — Target-price methodology fix (out-of-band, Ryan-requested)
 
 **Scope:** Ryan couldn't find a Pikachu VMAX PSA 10 anywhere near the $58 target price on the buy list and asked how that number was derived, with a request to double-check pricing on all 10 cards.

@@ -69,6 +69,24 @@ Ryan asked for pick quality to actually learn from real sales history and price 
 - **Learn from Ryan's own closed positions.** Whenever an item in `holdings-log.md` moves to `Sold`, log the actual sale price/date/realized ROI in that file's "Closed positions" table. Once there's enough closed-position history, each weekly deep dive should glance back at it: are certain sets, eras, or card types (e.g. modern full-art PSA 10s vs. alt-art secrets) consistently over- or under-shooting their projected ROI? Note any pattern you find and let it inform confidence on similar future picks — don't treat every new pick as if no track record exists once one does.
 - **Sanity-check rejections occasionally.** On a weekly deep dive, spot-check a couple of recently `Passed`/excluded candidates against what actually happened to their price — if a rejected pick would clearly have hit target, that's a sign the bar was too cautious; note it rather than letting it pass silently.
 
+## Community/collector demand signal (added 2026-09-15)
+Ryan wants picks informed by what the collector community actually values, not just price/liquidity math — his example: gold and rainbow rares are less desired than they used to be, so they're harder to sell, and that should factor into what gets picked.
+
+**Reddit is not usable as a source — confirmed by direct test 2026-09-15.** WebFetch is blocked entirely for reddit.com, and WebSearch does not surface real Reddit thread/comment content (queries return unrelated eBay listings and articles even when explicitly targeting a subreddit). Don't spend time trying to work around this each run — use the substitutes below, which capture the same signal and are actually accessible:
+- **Bleeding Cool's "Pokémon TCG Value Watch" series** (recurring, per-set, roughly monthly) — tracks which specific cards/rarities are gaining or losing value and why. This is the single best proxy for collector sentiment available to this routine.
+- Other hobby press/collector guides (PokeBeach, Chase Society set guides, TCGplayer's own blog, Mint Vandal, Delightful TCG) when they surface in search.
+- TCGplayer's own "most popular/most purchased" figures when visible in search snippets — real purchase-behavior data, not opinion.
+- eBay listing engagement (watcher/bid counts, "X sold in the last 24 hours") when visible — a live demand proxy.
+
+**Rarity-tier preference (documented hobby trend, confirmed 2026-09-15).** Since the Scarlet & Violet era began, collector preference has clearly shifted toward **Illustration Rares / Special Illustration Rares** (scene-based "alt art") over **gold Hyper Rares / rainbow Secret Rares** from the Sword & Shield era — an SIR of a popular Pokémon routinely outsells a technically-rarer gold card of the same Pokémon (per Bleeding Cool's Value Watch coverage and multiple 2026 hobby guides). Weight this when choosing between comparable options:
+- Prefer Illustration Rares/SIRs and iconic mascot cards over gold/rainbow secrets when price and liquidity are roughly equal.
+- A gold/rainbow secret can still qualify, but only with a specific offsetting reason (genuine brand-mascot power, a real dated catalyst) stated explicitly in its `thesis` — it's swimming against the current collector-preference trend, not with it, and the pick should own that rather than pitch the rarity tier as a strength.
+- Not an absolute veto — a cheap, extremely liquid gold/rainbow card can still be a fine pick. The point is to weight it down relative to an equally-priced SIR/alt-art alternative, not exclude the category outright.
+
+**Getting ahead of the curve ("popular before it's popular").** There's no reliable way to predict this, but two things give a genuine head start over waiting for prices to move:
+- **Set-reveal reaction, before release.** Hobby press covers every new-set card reveal individually. Outsized reaction to a specific card at reveal time — before the set releases and before any price exists — is a real leading indicator. Note it in `context.md` as a "watch once it releases" flag, not the buy list (there's no price yet to act on).
+- **Competitive/tournament relevance.** A card gaining real tournament play tends to build demand before casual-collector price catch-up. Early tournament coverage calling a new card a "meta staple" is a stronger forward signal than art/collector buzz alone.
+
 ## Product type toggles (updated — routine-side polling isn't possible)
 The routine's sandboxed environment can't reach flipdashboard.tcgflip.workers.dev's live settings API (same network restriction that blocks pricing APIs). Toggles on the dashboard are a phone-side display filter only — they don't change what gets researched. Keep researching sealed, raw singles, and slabs every run regardless of toggle state. If Ryan wants a category dropped from research entirely (not just hidden), that's a direct edit to this file, not something read live.
 
