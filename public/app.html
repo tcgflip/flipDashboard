@@ -247,6 +247,12 @@ function pricechartingUrl(item) {
   return `https://www.pricecharting.com/search-products?q=${encodeURIComponent((item.card + ' ' + (item.set || '')).trim())}&type=prices`;
 }
 
+function ebaySoldUrl(item) {
+  const { number } = parseSet(item.set);
+  const q = [item.card, number, item.grade].filter(Boolean).join(' ');
+  return `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(q)}&_sacat=0&LH_Sold=1&LH_Complete=1`;
+}
+
 function parseROI(str) {
   const m = String(str || '').match(/-?\d+(\.\d+)?/);
   return m ? parseFloat(m[0]) : -Infinity;
@@ -397,7 +403,9 @@ function renderBuyList(data) {
           ${renderReasons(b.thesis)}
           <div class="tile-source">${b.source}</div>
           <div class="tile-links">
-            <a href="${tcgplayerUrl(b)}" target="_blank" rel="noopener">TCGplayer ↗</a>
+            ${b.type === 'slab'
+              ? `<a href="${ebaySoldUrl(b)}" target="_blank" rel="noopener">eBay sold ↗</a>`
+              : `<a href="${tcgplayerUrl(b)}" target="_blank" rel="noopener">TCGplayer ↗</a>`}
             <a href="${pricechartingUrl(b)}" target="_blank" rel="noopener">PriceCharting ↗</a>
           </div>
         </div>
@@ -456,7 +464,7 @@ function renderHoldings(holdings) {
     const metaParts = [];
     if (h.currentMarketPrice != null) metaParts.push(`mkt $${h.currentMarketPrice.toFixed(2)}`);
     if (h.buyDate) metaParts.push(`bought ${h.buyDate}`);
-    return `<a class="buy-tile" href="${tcgplayerUrl(h)}" target="_blank" rel="noopener">
+    return `<a class="buy-tile" href="${h.grade ? ebaySoldUrl(h) : tcgplayerUrl(h)}" target="_blank" rel="noopener">
       <div class="tile-img">${cardImageSlot(h.card, h.set, h.cardId)}</div>
       <div class="tile-body">
         <div class="tile-name">${h.card}</div>
