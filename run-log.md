@@ -4,6 +4,24 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-15 — Daily check rerun under new price research methodology (out-of-band, Ryan-requested)
+
+**Scope:** Ryan asked to rerun the daily check applying the new sold-comp/trend/cross-source methodology just added to `instructions.md`. Couldn't fire the actual daily-check routine (same permission issue as the previous out-of-band run below — not created by this agent session), so applied the methodology directly to the current 10-item buy list.
+
+**Corrections found (2 of 10):**
+- **Charizard ex** — buy $7.21→$6.00, sell $11.34→$7.92, ROI 37%→18%. Two sources disagreed 30%+ and a tracker confirmed a 12.6% decline since release; the old sell price was stale.
+- **Rayquaza VMAX** — buy $11.50→$8.00, sell $15.39→$10.31, ROI 16%→15%. Resolves the conflict flagged 2026-09-14: confirmed a real 43.3% decline since release, so $10.31 (not $15.39) is current.
+
+**No change, evidence-based (2 of 10):** Radiant Charizard (raw) — fresh read ($19.45) matches existing ($19.31) within noise, stable.
+
+**No change, no new evidence either way (4 of 10):** Umbreon VMAX, Mew VMAX, Espeon VMAX (raw), and all 4 slabs (Radiant Charizard PSA 9, Mew VMAX PSA 10, Pikachu VMAX PSA 10, Giratina VSTAR PSA 10) — tried to strengthen sample size/trend confirmation on each; no additional clean data surfaced. Left as-is rather than revise without evidence, but noted as not independently trend-confirmed this pass.
+
+**Tooling limitation:** WebSearch can't reliably filter to eBay's actual sold/completed listings — it returns active listings and third-party synthesized ranges instead. The methodology's ideal (3+ verified sold comps per pick) isn't fully achievable here; this run is the same "WebSearch-snippet-sourced" confidence tier as before, applied more rigorously (explicit trend + cross-source checks) rather than with better underlying data.
+
+**Files updated:** `holdings-log.md` (new dated note, 2 corrected rows), `data.json` (2 corrected buyList entries), `run-log.md` (this entry).
+
+---
+
 ## 2026-09-15 — Deferred $1,000-cap re-sourcing (out-of-band, Ryan-requested)
 
 **Scope:** The daily quick-check earlier today (below) fixed the cap *text* but explicitly deferred actually re-sourcing the buy list under the new $1,000 ceiling to the next weekly deep dive. Ryan checked and asked for this to happen now instead of waiting — this run closes that specific backlog item. Not a full weekly-scope pass (no show calendar refresh, no sealed EV re-check, no holdings review beyond what's below).
