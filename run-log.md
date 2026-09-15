@@ -4,6 +4,20 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-15 — Thesis fact-check + bullet-format conversion (out-of-band, Ryan-requested)
+
+**Scope:** Ryan asked to double-check the buy list's thesis text accuracy and reformat it as short "top reasons" bullets instead of prose.
+
+**Fact-checked:** Charizard ex's PSA pop 5,455 (confirmed, two sources agreed within noise), Espeon ex/Umbreon ex Battle Deck's Oct 30 2026 release date (confirmed), Mew/Mewtwo 30th Celebration promo claim (confirmed), Lost Origin's 2022 release year (confirmed). Radiant Charizard's PSA pop ~19,073 claim wasn't independently re-verified this pass — noted as such rather than re-asserted with false confidence.
+
+**Error found and fixed:** Giratina VSTAR's alt-art secret was misrecorded as #212/196 — it's actually #201/196 (confirmed via TCGplayer's own listing and an Amazon listing). Corrected in `holdings-log.md` and `data.json`.
+
+**Format change:** `thesis` is now a JSON array of 2-3 short bullet strings per pick instead of a paragraph. `instructions.md` documents this for future runs; `public/app.html` renders it as an actual bulleted list on each buy-list tile.
+
+**Files updated:** `instructions.md` (thesis schema documented), `holdings-log.md` (card-number fix, new dated note), `public/data.json` (all 10 buyList theses converted to arrays, Giratina card number fixed), `public/app.html` (bullet rendering + CSS), `run-log.md` (this entry).
+
+---
+
 ## 2026-09-15 — Daily check rerun under new price research methodology (out-of-band, Ryan-requested)
 
 **Scope:** Ryan asked to rerun the daily check applying the new sold-comp/trend/cross-source methodology just added to `instructions.md`. Couldn't fire the actual daily-check routine (same permission issue as the previous out-of-band run below — not created by this agent session), so applied the methodology directly to the current 10-item buy list.

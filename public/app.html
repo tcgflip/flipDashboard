@@ -115,6 +115,9 @@
   .tile-roi.verdict-watch{color:var(--coral);}
   .tile-meta{color:var(--text-faint); font-size:10.5px; font-family:'IBM Plex Mono',monospace; margin-top:2px;}
   .tile-thesis{color:var(--text-dim); font-size:11.5px; margin-top:6px; line-height:1.35;}
+  .tile-reasons{color:var(--text-dim); font-size:11.5px; margin:6px 0 0; padding-left:14px; line-height:1.4; list-style:none;}
+  .tile-reasons li{position:relative; margin-bottom:3px;}
+  .tile-reasons li::before{content:"–"; position:absolute; left:-13px; color:var(--text-faint);}
   .tile-source{color:var(--text-faint); font-size:10px; margin-top:6px;}
   .empty{color:var(--text-dim); font-size:14px;}
   .warn{border-left:3px solid var(--coral); padding:12px 16px; background:var(--panel); border-radius:0 8px 8px 0; margin-top:16px;}
@@ -240,6 +243,13 @@ function formatShortDate(dateStr) {
   return `${MONTHS[d.getMonth()]} ${d.getDate()}`;
 }
 
+function renderReasons(thesis) {
+  if (Array.isArray(thesis)) {
+    return `<ul class="tile-reasons">${thesis.map(r => `<li>${r}</li>`).join('')}</ul>`;
+  }
+  return thesis ? `<div class="tile-thesis">${thesis}</div>` : '';
+}
+
 async function resolveCardImage(name, set) {
   try {
     const res = await fetch(`/api/card-image?name=${encodeURIComponent(name)}&set=${encodeURIComponent(set || '')}`);
@@ -353,7 +363,7 @@ function renderBuyList(data) {
             <span class="tile-roi">${b.expectedROI}</span>
           </div>
           <div class="tile-meta">${secondary ? secondary + ' · ' : ''}by ${formatShortDate(b.sellBy)}</div>
-          <div class="tile-thesis">${b.thesis}</div>
+          ${renderReasons(b.thesis)}
           <div class="tile-source">${b.source}</div>
         </div>
       </a>`;

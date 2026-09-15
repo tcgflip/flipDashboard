@@ -47,6 +47,7 @@ Only recommend modern cards:
 - For slabs: note the grade explicitly (PSA 9, PSA 10, etc.) and reference population report scarcity where it matters. A higher price ceiling puts low-population PSA 10s of genuinely chase modern cards in scope — but liquidity and popularity still gate everything above: don't recommend a high-value card just because it's under the cap if it isn't something an Oʻahu vendor/collector would recognize and want.
 - Sort every category's picks by expected net ROI, highest first.
 - Every pick still needs a cited price source and a sell-by date tied to a real catalyst where one exists.
+- **`thesis` is a JSON array of short bullet strings (added 2026-09-15)**, not a paragraph — 2-4 fragments covering the top reasons behind the valuation (liquidity/print-run, catalyst, price-confidence caveat, trend note). Keep each bullet to one concrete fact or claim; verify factual claims (PSA pop counts, release dates, set-year claims) before stating them rather than repeating an earlier run's unverified figure. The dashboard renders this as a bulleted list on each buy-list tile.
 
 ### Retired
 The $5–$20 / 35–40% ROI "singles-only pilot" from 2026-09-13 is retired. Its three picks (Espeon-GX sm1-61, Umbreon bw5-61, Sylveon xy3-72) don't qualify under the modern-only rule (all pre-2020) and are now Passed in `holdings-log.md`.
