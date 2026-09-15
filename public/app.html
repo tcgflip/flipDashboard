@@ -88,6 +88,27 @@
   .roi{color:var(--coral); font-size:13px; font-weight:500; text-align:right;}
   .thesis{color:var(--text-dim); font-size:13px; margin-top:6px; max-width:52ch;}
   .source{color:var(--text-faint); font-size:11px; margin-top:6px; display:block;}
+
+  .buy-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(148px,1fr)); gap:14px;}
+  .buy-tile{
+    background:var(--panel); border:1px solid var(--line-strong); border-radius:12px;
+    overflow:hidden; display:flex; flex-direction:column;
+    text-decoration:none; color:inherit;
+  }
+  .tile-img{
+    aspect-ratio:5/7; background:var(--panel-2);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  .tile-img img{width:100%; height:100%; object-fit:contain;}
+  .tile-body{padding:10px 12px 12px; display:flex; flex-direction:column; gap:3px; flex:1;}
+  .tile-name{font-weight:600; font-size:13.5px; line-height:1.25;}
+  .tile-set{color:var(--text-faint); font-size:11px; line-height:1.3;}
+  .tile-price-row{display:flex; align-items:baseline; justify-content:space-between; gap:6px; margin-top:5px;}
+  .tile-price{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:16px; color:var(--gold); white-space:nowrap;}
+  .tile-roi{font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:var(--gain); white-space:nowrap;}
+  .tile-meta{color:var(--text-faint); font-size:10.5px; font-family:'IBM Plex Mono',monospace; margin-top:2px;}
+  .tile-thesis{color:var(--text-dim); font-size:11.5px; margin-top:6px; line-height:1.35;}
+  .tile-source{color:var(--text-faint); font-size:10px; margin-top:6px;}
   .tcg-link{color:var(--gold); font-size:13px; text-decoration:none; display:inline-block; margin-top:6px;}
   .verdict{font-size:13px; font-weight:600; margin-top:4px;}
   .verdict-sell{color:var(--gold);}
@@ -199,6 +220,13 @@ function parseROI(str) {
   return m ? parseFloat(m[0]) : -Infinity;
 }
 
+function formatShortDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  if (isNaN(d)) return dateStr;
+  return `${MONTHS[d.getMonth()]} ${d.getDate()}`;
+}
+
 async function resolveCardImage(name, set) {
   try {
     const res = await fetch(`/api/card-image?name=${encodeURIComponent(name)}&set=${encodeURIComponent(set || '')}`);
@@ -283,29 +311,25 @@ function renderBuyList(data) {
   if (!visible.length) {
     buyEl.innerHTML = `<p class="empty">${data.buyList.length ? 'No picks match your current filters.' : (data.buyListNote || 'No picks right now.')}</p>`;
   } else {
-    buyEl.innerHTML = visible.map(b => {
+    const tiles = visible.map(b => {
       const typeLabel = TYPE_LABELS[b.type] || b.type || '';
       const secondary = b.ev != null ? `EV $${b.ev.toFixed(2)}` : (b.marketPrice != null ? `mkt $${b.marketPrice.toFixed(2)}` : '');
-      return `<div class="buy-row"><div class="buy-body">
-        ${cardImageSlot(b.card, b.set, b.cardId)}
-        <div class="buy-main">
-          <div class="buy-head">
-            <div>
-              <div class="item-name">${b.card}${b.grade ? ' · ' + b.grade : ''}</div>
-              <div class="item-note">${typeLabel}${b.set ? ' · ' + b.set : ''}</div>
-            </div>
-            <div>
-              <span class="num price">$${b.targetPrice.toFixed(2)}</span>
-              ${secondary ? `<span class="market">${secondary}</span>` : ''}
-              <div class="roi">${b.expectedROI} net · sell by ${b.sellBy}</div>
-            </div>
+      return `<a class="buy-tile" href="${tcgplayerUrl(b.card, b.set)}" target="_blank" rel="noopener">
+        <div class="tile-img">${cardImageSlot(b.card, b.set, b.cardId)}</div>
+        <div class="tile-body">
+          <div class="tile-name">${b.card}${b.grade ? ' · ' + b.grade : ''}</div>
+          <div class="tile-set">${typeLabel}${b.set ? ' · ' + b.set : ''}</div>
+          <div class="tile-price-row">
+            <span class="tile-price">$${b.targetPrice.toFixed(2)}</span>
+            <span class="tile-roi">${b.expectedROI}</span>
           </div>
-          <div class="thesis">${b.thesis}</div>
-          <a class="tcg-link" href="${tcgplayerUrl(b.card, b.set)}" target="_blank" rel="noopener">View on TCGplayer</a>
-          <span class="source">${b.source}</span>
+          <div class="tile-meta">${secondary ? secondary + ' · ' : ''}by ${formatShortDate(b.sellBy)}</div>
+          <div class="tile-thesis">${b.thesis}</div>
+          <div class="tile-source">${b.source}</div>
         </div>
-      </div></div>`;
+      </a>`;
     }).join('');
+    buyEl.innerHTML = `<div class="buy-grid">${tiles}</div>`;
   }
 
   const giveEl = document.getElementById('giveaways-list');
