@@ -4,6 +4,22 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-15 — Deferred $1,000-cap re-sourcing (out-of-band, Ryan-requested)
+
+**Scope:** The daily quick-check earlier today (below) fixed the cap *text* but explicitly deferred actually re-sourcing the buy list under the new $1,000 ceiling to the next weekly deep dive. Ryan checked and asked for this to happen now instead of waiting — this run closes that specific backlog item. Not a full weekly-scope pass (no show calendar refresh, no sealed EV re-check, no holdings review beyond what's below).
+
+**Re-evaluated the slab candidates rejected under the old $50 cap:**
+- **Umbreon VMAX PSA 9 (Evolving Skies #095/203, non-alt-art)** — still excluded. eBay listings this pass came back a $150–$750 spread that looks contaminated by the unrelated "Moonbreon" alt-art secret rare (#215/203 — a different, far more expensive card) bleeding into search results. Couldn't get a clean number; not forcing a pick on unreliable data.
+- **Mew VMAX PSA 10 (Fusion Strike #114/264)** — added. One clean eBay sold comp ($129.99, mid-April 2026). Target $95, ~20% net ROI.
+- **Pikachu VMAX PSA 10 (Vivid Voltage #188/185, rainbow secret)** — added. Recent-sold range $52–$88, most recent actual sale $81 (Jan 2026). Target $58, ~24% net ROI.
+
+**New pick using the higher ceiling:**
+- **Giratina VSTAR PSA 10 (Lost Origin #212/196, alt art)** — a popular, high-print-run VSTAR alt art that simply didn't fit under the old $50 cap. Price is range-sourced ($150–$220 eBay/TCGplayer), not a single comp — flagged as lower-confidence than the others. Target $150, ~14% net ROI.
+
+**Files updated:** `holdings-log.md` (new dated note + 3 new Proposed rows), `data.json` (3 new slab entries appended to `buyList`, `generated_at` unchanged — same day), `run-log.md` (this entry).
+
+---
+
 ## 2026-09-15 — Daily quick-check
 
 **Scope:** Lightweight spot-check per `instructions.md` — imminent events, price sanity-check on current buy-list picks, new-giveaway scan, and the daily website-interface pass.
