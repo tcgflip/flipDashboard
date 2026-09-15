@@ -3,10 +3,15 @@
   "compatibility_date": "2026-09-14",
   "main": "worker.js",
   "assets": {
-    "directory": ".",
+    "directory": "public",
     "binding": "ASSETS"
   },
   "kv_namespaces": [
     { "binding": "STATE_KV", "id": "69b5afe08a6044f6a570e7a1a6cf5dde" }
-  ]
+  ],
+  "vars": {
+    "GOOGLE_CLIENT_ID": "671138852946-jlqno5f0ck4vfdd8tevg84vaiq2brsis.apps.googleusercontent.com",
+    "ALLOWED_EMAILS": "tcgflip@gmail.com",
+    "OAUTH_REDIRECT_URI": "https://flipdashboard.tcgflip.workers.dev/api/auth/callback"
+  }
 }

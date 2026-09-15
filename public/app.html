@@ -5,79 +5,114 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#14213D">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='36' fill='%2314213D'/%3E%3Ctext x='90' y='120' font-family='Georgia,serif' font-size='84' fill='%23E3A857' text-anchor='middle'%3EPF%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#0B0E14">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='36' fill='%230B0E14'/%3E%3Ctext x='90' y='118' font-family='Georgia,serif' font-weight='700' font-size='80' fill='%23D9A63E' text-anchor='middle'%3EPF%3C/text%3E%3C/svg%3E">
 <title>Poke Fips</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy:#14213D; --navy-light:#1E2E4F; --gold:#E3A857;
-    --coral:#E8664A; --cream:#F2EFE6; --muted:#9AA7BD;
-    --hairline:rgba(242,239,230,0.14);
+    --ink:#0B0E14; --panel:#141926; --panel-2:#1B2233;
+    --line:rgba(243,239,230,0.10); --line-strong:rgba(243,239,230,0.20);
+    --gold:#D9A63E; --coral:#FF6452; --gain:#3DDC84;
+    --text:#F3EFE4; --text-dim:#9AA0AE; --text-faint:#5B6270;
   }
   *{box-sizing:border-box;}
   body{
-    margin:0; background:var(--navy); color:var(--cream);
-    font-family:'IBM Plex Sans',sans-serif; line-height:1.45;
+    margin:0; background:var(--ink); color:var(--text);
+    font-family:'Space Grotesk',sans-serif; line-height:1.45;
     padding-bottom:calc(72px + env(safe-area-inset-bottom));
   }
-  h1,h2,.num{font-family:'Fraunces',serif;}
-  header{ padding:calc(24px + env(safe-area-inset-top)) 24px 16px; border-bottom:1px solid var(--hairline); }
-  h1{font-size:26px; font-weight:600; margin:0 0 4px;}
-  #updated{margin:8px 0 0; color:var(--muted); font-size:13px;}
+  h1,h2,.brand{font-family:'Fraunces',serif;}
+  .num,.tabular{font-variant-numeric:tabular-nums;}
+
+  header{
+    padding:calc(20px + env(safe-area-inset-top)) 20px 16px; border-bottom:1px solid var(--line);
+    display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  }
+  .brand{
+    font-weight:700; font-size:22px; letter-spacing:-0.01em; margin:0;
+    display:flex; align-items:baseline; gap:0.14em;
+  }
+  .brand .flip{ display:inline-block; color:var(--gold); transform:rotateX(180deg); }
+  #updated{margin:6px 0 0; color:var(--text-faint); font-size:12.5px; font-family:'IBM Plex Mono',monospace;}
+  .account{text-align:right; font-size:12.5px; color:var(--text-faint);}
+  .account a{color:var(--text-dim); text-decoration:none; border-bottom:1px solid var(--line-strong);}
+  .account a:hover{color:var(--coral); border-color:var(--coral);}
+
   main{max-width:640px; margin:0 auto; padding:0 20px;}
   .screen{display:none;}
   .screen.active{display:block;}
   section{padding:24px 4px;}
-  section + section{border-top:1px solid var(--hairline);}
+  section + section{border-top:1px solid var(--line);}
   h2{font-size:20px; font-weight:600; margin:0 0 16px;}
+
   .pill-row{display:flex; gap:10px; flex-wrap:wrap;}
-  .pill{display:flex; align-items:center; gap:8px; font-size:14px; background:none; border:1px solid var(--hairline); color:var(--cream); border-radius:20px; padding:8px 14px; font-family:inherit; cursor:pointer;}
+  .pill{display:flex; align-items:center; gap:8px; font-size:14px; background:var(--panel); border:1px solid var(--line-strong); color:var(--text); border-radius:20px; padding:8px 14px; font-family:inherit; cursor:pointer;}
   .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
   .dot.on{background:var(--gold);}
-  .dot.off{background:transparent; border:1px solid var(--muted);}
+  .dot.off{background:transparent; border:1px solid var(--text-faint);}
   .price-cap-field{margin-top:14px;}
-  .price-cap-field label{font-size:13px; color:var(--muted); display:block; margin-bottom:6px;}
-  .price-cap-field input{background:var(--navy-light); border:1px solid var(--hairline); color:var(--cream); border-radius:8px; padding:8px 12px; font-family:inherit; font-size:14px; width:120px;}
+  .price-cap-field label{font-size:13px; color:var(--text-dim); display:block; margin-bottom:6px;}
+  .price-cap-field input{background:var(--panel); border:1px solid var(--line-strong); color:var(--text); border-radius:8px; padding:8px 12px; font-family:'IBM Plex Mono',monospace; font-size:14px; width:120px;}
+
+  .portfolio-stat{
+    background:linear-gradient(180deg,var(--panel-2),var(--panel));
+    border:1px solid var(--line-strong); border-radius:14px; padding:20px 22px; margin-bottom:20px;
+  }
+  .portfolio-stat .label{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-faint); margin:0 0 8px;}
+  .portfolio-stat .value{font-family:'Fraunces',serif; font-weight:600; font-size:34px; margin:0; font-variant-numeric:tabular-nums;}
+  .portfolio-stat .delta{font-family:'IBM Plex Mono',monospace; font-size:13.5px; margin-top:4px;}
+  .portfolio-stat .delta.up{color:var(--gain);}
+  .portfolio-stat .delta.down{color:var(--coral);}
+  .portfolio-stat .sub{color:var(--text-faint); font-size:12px; margin-top:10px;}
+
   .row{display:flex; gap:16px; padding:14px 0;}
-  .row + .row{border-top:1px solid var(--hairline);}
+  .row + .row{border-top:1px solid var(--line);}
   .date-badge{flex:0 0 52px; text-align:center;}
-  .date-badge .day{font-size:22px; font-weight:600; display:block;}
-  .date-badge .month{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em;}
+  .date-badge .day{font-size:22px; font-weight:600; display:block; font-family:'IBM Plex Mono',monospace;}
+  .date-badge .month{font-size:12px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.04em;}
   .item-name{font-weight:600; font-size:16px;}
-  .item-note{color:var(--muted); font-size:13px; margin-top:2px;}
+  .item-note{color:var(--text-dim); font-size:13px; margin-top:2px;}
   .tag{display:inline-block; font-size:12px; color:var(--coral); margin-top:4px;}
   .directions{font-size:13px; color:var(--gold); text-decoration:none; display:inline-block; margin-top:6px;}
+
   .buy-row{padding:16px 0;}
-  .buy-row + .buy-row{border-top:1px solid var(--hairline);}
+  .buy-row + .buy-row{border-top:1px solid var(--line);}
   .buy-body{display:flex; gap:12px;}
   .card-img{width:56px; height:auto; border-radius:4px; flex-shrink:0;}
   .buy-main{flex:1; min-width:0;}
   .buy-head{display:flex; justify-content:space-between; align-items:baseline; gap:12px;}
-  .price{font-size:22px; font-weight:600; color:var(--gold); white-space:nowrap;}
-  .market{color:var(--muted); font-size:13px; margin-left:6px;}
+  .price{font-size:22px; font-weight:600; color:var(--gold); white-space:nowrap; font-family:'IBM Plex Mono',monospace;}
+  .market{color:var(--text-dim); font-size:13px; margin-left:6px; font-family:'IBM Plex Mono',monospace;}
   .roi{color:var(--coral); font-size:13px; font-weight:500; text-align:right;}
-  .thesis{color:var(--muted); font-size:13px; margin-top:6px; max-width:52ch;}
-  .source{color:var(--muted); font-size:11px; margin-top:6px; display:block;}
+  .thesis{color:var(--text-dim); font-size:13px; margin-top:6px; max-width:52ch;}
+  .source{color:var(--text-faint); font-size:11px; margin-top:6px; display:block;}
   .tcg-link{color:var(--gold); font-size:13px; text-decoration:none; display:inline-block; margin-top:6px;}
   .verdict{font-size:13px; font-weight:600; margin-top:4px;}
   .verdict-sell{color:var(--gold);}
-  .verdict-hold{color:var(--cream);}
+  .verdict-hold{color:var(--text);}
   .verdict-watch{color:var(--coral);}
-  .empty{color:var(--muted); font-size:14px;}
-  .warn{border-left:3px solid var(--coral); padding:12px 16px; background:var(--navy-light); margin-top:16px;}
-  .warn .item-name{color:var(--cream);}
-  .tabbar{position:fixed; left:0; right:0; bottom:0; display:flex; background:var(--navy-light); border-top:1px solid var(--hairline); padding:8px 0 calc(8px + env(safe-area-inset-bottom)); z-index:10;}
-  .tabbar button{flex:1; background:none; border:none; color:var(--muted); font-family:'IBM Plex Sans',sans-serif; font-size:11px; display:flex; flex-direction:column; align-items:center; gap:4px; padding:4px 0; cursor:pointer;}
+  .empty{color:var(--text-dim); font-size:14px;}
+  .warn{border-left:3px solid var(--coral); padding:12px 16px; background:var(--panel); border-radius:0 8px 8px 0; margin-top:16px;}
+  .warn .item-name{color:var(--text);}
+
+  .tabbar{position:fixed; left:0; right:0; bottom:0; display:flex; background:var(--panel); border-top:1px solid var(--line); padding:8px 0 calc(8px + env(safe-area-inset-bottom)); z-index:10;}
+  .tabbar button{flex:1; background:none; border:none; color:var(--text-faint); font-family:'Space Grotesk',sans-serif; font-size:11px; display:flex; flex-direction:column; align-items:center; gap:4px; padding:4px 0; cursor:pointer;}
   .tabbar button.active{color:var(--gold);}
   .tabbar svg{width:22px; height:22px;}
 </style>
 </head>
 <body>
   <header>
-    <h1>Poke Fips</h1>
-    <p id="updated">Loading…</p>
+    <div>
+      <h1 class="brand"><span>poke</span><span class="flip">fips</span></h1>
+      <p id="updated">Loading…</p>
+    </div>
+    <div class="account">
+      <div id="account-email">&nbsp;</div>
+      <a href="/api/auth/logout">Log out</a>
+    </div>
   </header>
   <main>
     <section id="screen-buylist" class="screen active">
@@ -88,13 +123,14 @@
         <input type="number" id="price-cap-input" placeholder="No limit" min="1">
       </div>
     </section>
-    <section id="screen-buylist2" class="screen active" style="border-top:1px solid var(--hairline);">
+    <section id="screen-buylist2" class="screen active" style="border-top:1px solid var(--line);">
       <h2>Buy list</h2>
       <div id="buylist-list"></div>
       <div id="giveaways-list"></div>
     </section>
     <section id="screen-owned" class="screen">
       <h2>Owned</h2>
+      <div id="portfolio-stat"></div>
       <div id="holdings-list"><p class="empty">Loading…</p></div>
     </section>
     <section id="screen-events" class="screen">
@@ -124,6 +160,10 @@ const TYPE_LABELS = { sealed: 'Sealed', single: 'Raw single', slab: 'Slab' };
 const TOGGLE_LABELS = { sealed: 'Sealed', rawSingles: 'Raw singles', slabs: 'Slabs' };
 let holdingsLoaded = false;
 let currentData = null;
+
+fetch('/api/session').then(r => r.json()).then(s => {
+  document.getElementById('account-email').textContent = s.authenticated ? s.email : '';
+}).catch(() => {});
 
 document.querySelectorAll('.tabbar button').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -182,43 +222,39 @@ async function fillLookupImages() {
   }
 }
 
-async function toggleType(type, current) {
-  try {
-    const res = await fetch('/api/toggle', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, value: !current })
-    });
-    const ct = res.headers.get('content-type') || '';
-    if (!res.ok || !ct.includes('json')) throw new Error('auth needed');
-    const state = await res.json();
-    currentData.strategy.productTypes = state;
-    renderStrategy(state);
-    renderBuyList(currentData);
-  } catch (e) {
-    if (confirm('You may need to sign in first. Open sign-in now?')) {
-      window.location.href = '/api/toggle';
-    }
+function requireSession(res) {
+  if (res.status === 401) {
+    location.href = '/';
+    return false;
   }
+  return true;
+}
+
+async function toggleType(type, current) {
+  const res = await fetch('/api/toggle', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type, value: !current })
+  });
+  if (!requireSession(res)) return;
+  if (!res.ok) return;
+  const state = await res.json();
+  currentData.strategy.productTypes = state;
+  renderStrategy(state);
+  renderBuyList(currentData);
 }
 
 async function setPriceCap(value) {
-  try {
-    const res = await fetch('/api/price', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ maxPrice: value })
-    });
-    const ct = res.headers.get('content-type') || '';
-    if (!res.ok || !ct.includes('json')) throw new Error('auth needed');
-    const data = await res.json();
-    currentData.strategy.maxPrice = data.maxPrice;
-    renderBuyList(currentData);
-  } catch (e) {
-    if (confirm('You may need to sign in first. Open sign-in now?')) {
-      window.location.href = '/api/price';
-    }
-  }
+  const res = await fetch('/api/price', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ maxPrice: value })
+  });
+  if (!requireSession(res)) return;
+  if (!res.ok) return;
+  const data = await res.json();
+  currentData.strategy.maxPrice = data.maxPrice;
+  renderBuyList(currentData);
 }
 
 function renderStrategy(types) {
@@ -280,18 +316,33 @@ function renderBuyList(data) {
   fillLookupImages();
 }
 
+function renderPortfolioStat(holdings) {
+  const el = document.getElementById('portfolio-stat');
+  const priced = holdings.filter(h => h.buyPrice != null);
+  if (!priced.length) { el.innerHTML = ''; return; }
+  const invested = priced.reduce((sum, h) => sum + h.buyPrice, 0);
+  const current = priced.reduce((sum, h) => sum + (h.currentMarketPrice ?? h.buyPrice), 0);
+  const gain = current - invested;
+  const gainPct = invested > 0 ? (gain / invested) * 100 : 0;
+  const sign = gain >= 0 ? '+' : '−';
+  const deltaClass = gain >= 0 ? 'up' : 'down';
+  el.innerHTML = `
+    <div class="portfolio-stat">
+      <p class="label">Current value</p>
+      <p class="value tabular">$${current.toFixed(2)}</p>
+      <p class="delta tabular ${deltaClass}">${sign}$${Math.abs(gain).toFixed(2)} (${sign}${Math.abs(gainPct).toFixed(1)}%)</p>
+      <p class="sub tabular">$${invested.toFixed(2)} invested across ${priced.length} card${priced.length === 1 ? '' : 's'}</p>
+    </div>`;
+}
+
 async function loadHoldings() {
   const el = document.getElementById('holdings-list');
-  try {
-    const res = await fetch('/holdings.json?_=' + Date.now());
-    const ct = res.headers.get('content-type') || '';
-    if (!res.ok || !ct.includes('json')) throw new Error('not authorized');
-    const data = await res.json();
-    renderHoldings(data.holdings || []);
-  } catch (e) {
-    el.innerHTML = `<p class="empty">Sign in with your Google account to view your owned cards.</p>
-      <a class="tcg-link" href="/holdings.json">Sign in</a>`;
-  }
+  const res = await fetch('/holdings.json?_=' + Date.now());
+  if (!requireSession(res)) return;
+  if (!res.ok) { el.innerHTML = '<p class="empty">Could not load holdings.</p>'; return; }
+  const data = await res.json();
+  renderPortfolioStat(data.holdings || []);
+  renderHoldings(data.holdings || []);
 }
 
 function renderHoldings(holdings) {

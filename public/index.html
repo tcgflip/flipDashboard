@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0B0E14">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='36' fill='%230B0E14'/%3E%3Ctext x='90' y='118' font-family='Georgia,serif' font-weight='700' font-size='80' fill='%23D9A63E' text-anchor='middle'%3EPF%3C/text%3E%3C/svg%3E">
+<title>Poke Fips</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B0E14; --panel:#141926; --panel-2:#1B2233;
+    --line:rgba(243,239,230,0.10); --line-strong:rgba(243,239,230,0.20);
+    --gold:#D9A63E; --coral:#FF6452;
+    --text:#F3EFE4; --text-dim:#9AA0AE; --text-faint:#5B6270;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%; margin:0;}
+  body{
+    background:var(--ink); color:var(--text);
+    font-family:'Space Grotesk',sans-serif;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:calc(32px + env(safe-area-inset-top)) 20px calc(32px + env(safe-area-inset-bottom));
+    text-align:center;
+  }
+  .bg{
+    position:fixed; inset:0; z-index:-1; overflow:hidden;
+  }
+  .bg svg{position:absolute; width:100%; height:100%;}
+
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.16em;
+    text-transform:uppercase; color:var(--text-faint); margin:0 0 28px;
+  }
+
+  .wordmark{
+    perspective:640px;
+    font-family:'Space Grotesk',sans-serif; font-weight:700;
+    font-size:clamp(44px,11vw,78px); letter-spacing:-0.02em;
+    display:flex; align-items:center; gap:0.16em; margin:0 0 22px;
+  }
+  .wordmark .flip{
+    display:inline-block; color:var(--gold); transform:rotateX(180deg);
+  }
+  @media (prefers-reduced-motion:no-preference){
+    .wordmark .flip{ animation:flipSettle 900ms cubic-bezier(.2,.7,.2,1) 200ms both; }
+  }
+  @keyframes flipSettle{
+    0%{ transform:rotateX(0deg); }
+    55%{ transform:rotateX(205deg); }
+    100%{ transform:rotateX(180deg); }
+  }
+
+  .tagline{
+    font-family:'Fraunces',serif; font-weight:500; font-size:clamp(17px,2.6vw,21px);
+    color:var(--text-dim); max-width:34ch; margin:0 0 40px; text-wrap:balance;
+  }
+
+  .cta{
+    display:inline-flex; align-items:center; gap:12px;
+    background:var(--panel); border:1px solid var(--line-strong); color:var(--text);
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px;
+    padding:14px 26px; border-radius:999px; text-decoration:none;
+    transition:background 150ms ease, border-color 150ms ease;
+  }
+  .cta:hover{ background:var(--panel-2); border-color:var(--gold); }
+  .cta:focus-visible{ outline:2px solid var(--gold); outline-offset:3px; }
+
+  .fineprint{
+    margin-top:22px; font-family:'IBM Plex Mono',monospace; font-size:12px;
+    color:var(--text-faint);
+  }
+
+  .error-banner{
+    display:none; align-items:center; gap:10px;
+    background:rgba(255,100,82,0.12); border:1px solid rgba(255,100,82,0.35);
+    color:var(--coral); font-size:13.5px; padding:10px 16px; border-radius:10px;
+    margin-bottom:28px; max-width:38ch;
+  }
+  .error-banner.show{display:flex;}
+
+  .checking{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-faint);
+    margin-top:10px; min-height:1em;
+  }
+</style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <svg viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <radialGradient id="glow" cx="50%" cy="18%" r="60%">
+          <stop offset="0%" stop-color="#1B2233" stop-opacity="0.9"/>
+          <stop offset="100%" stop-color="#0B0E14" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="800" height="800" fill="#0B0E14"/>
+      <rect width="800" height="800" fill="url(#glow)"/>
+    </svg>
+  </div>
+
+  <p class="eyebrow">Oʻahu Pokémon Flip Tracker</p>
+
+  <div id="error" class="error-banner" role="alert"></div>
+
+  <h1 class="wordmark"><span>poke</span><span class="flip">fips</span></h1>
+
+  <p class="tagline">Buy list, holdings, and the local card-show calendar — tracked like a portfolio, updated every day.</p>
+
+  <a class="cta" href="/api/auth/login">
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+      <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/>
+      <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.83.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.96v2.33A9 9 0 0 0 9 18z"/>
+      <path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.67 9c0-.59.1-1.17.28-1.7V4.97H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.03l2.99-2.33z"/>
+      <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.97l2.99 2.33C4.66 5.17 6.65 3.58 9 3.58z"/>
+    </svg>
+    Continue with Google
+  </a>
+
+  <p class="fineprint">Access is limited to approved accounts.</p>
+  <p id="checking" class="checking"></p>
+
+<script>
+const params = new URLSearchParams(location.search);
+const errors = {
+  not_authorized: "That Google account isn't approved for this dashboard.",
+  auth_failed: "Something went wrong signing in — please try again.",
+  invalid_state: "Your sign-in link expired — please try again."
+};
+const err = params.get('error');
+if (err && errors[err]) {
+  const el = document.getElementById('error');
+  el.textContent = errors[err];
+  el.classList.add('show');
+}
+
+fetch('/api/session').then(r => r.json()).then(data => {
+  if (data.authenticated) {
+    document.getElementById('checking').textContent = 'Already signed in — redirecting…';
+    location.href = '/app.html';
+  }
+}).catch(() => {});
+</script>
+</body>
+</html>
