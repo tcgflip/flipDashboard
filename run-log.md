@@ -18,6 +18,20 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-15 — Target-price methodology fix (out-of-band, Ryan-requested)
+
+**Scope:** Ryan couldn't find a Pikachu VMAX PSA 10 anywhere near the $58 target price on the buy list and asked how that number was derived, with a request to double-check pricing on all 10 cards.
+
+**Root cause found:** `targetPrice` was never verified against a real listing — it was the market/sold-comp price minus an arbitrary discount (often 25-45%) chosen to produce a flattering ROI, not a number grounded in anything findable. This affected all 10 entries, not just Pikachu.
+
+**Fix:** Recomputed every `targetPrice` as ~15% below the current verified market/sold-comp price — a realistic in-person, cash-negotiation discount, which is the only edge this routine can actually stand behind (it can't confirm a specific online listing exists at a specific price). Net ROI dropped from a 10-32% range to a consistent 8-12% — an honest correction, not a regression. Pikachu VMAX specifically: $58 target (24% ROI) → $69 target (10% ROI).
+
+**UI change:** relabeled the price tile "Target (negotiate)" on both Buy List and Owned tabs so it's never mistaken for a purchasable listing price.
+
+**Files updated:** `instructions.md` (methodology documents the ~15%-off-market rule), `holdings-log.md` (10 rows corrected, new dated note), `public/data.json` (10 buyList entries repriced), `public/app.html` (price label), `run-log.md` (this entry).
+
+---
+
 ## 2026-09-15 — Daily check rerun under new price research methodology (out-of-band, Ryan-requested)
 
 **Scope:** Ryan asked to rerun the daily check applying the new sold-comp/trend/cross-source methodology just added to `instructions.md`. Couldn't fire the actual daily-check routine (same permission issue as the previous out-of-band run below — not created by this agent session), so applied the methodology directly to the current 10-item buy list.

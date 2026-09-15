@@ -116,6 +116,7 @@
   }
   .tile-price-row{display:flex; align-items:baseline; justify-content:space-between; gap:6px; margin-top:5px;}
   .tile-price{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:16px; color:var(--gold); white-space:nowrap;}
+  .tile-price-label{font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-faint); margin-bottom:1px;}
   .tile-roi{font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:var(--gain); white-space:nowrap;}
   .tile-roi.verdict-sell{color:var(--gold);}
   .tile-roi.verdict-hold{color:var(--text-dim);}
@@ -396,7 +397,10 @@ function renderBuyList(data) {
           <div class="tile-set">${setName}${setNumber ? ` <span class="set-number">${setNumber}</span>` : ''}</div>
           <div class="tile-tags"><span class="tile-tag">${typeLabel}</span>${rarity ? `<span class="tile-tag">${capitalize(rarity)}</span>` : ''}</div>
           <div class="tile-price-row">
-            <span class="tile-price">$${b.targetPrice.toFixed(2)}</span>
+            <div>
+              <div class="tile-price-label">Target (negotiate)</div>
+              <span class="tile-price">$${b.targetPrice.toFixed(2)}</span>
+            </div>
             <span class="tile-roi">${b.expectedROI}</span>
           </div>
           <div class="tile-meta">${secondary ? secondary + ' · ' : ''}by ${formatShortDate(b.sellBy)}</div>
