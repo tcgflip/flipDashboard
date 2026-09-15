@@ -38,6 +38,8 @@ Status values: `Proposed` (recommended, not yet confirmed bought) · `Holding` (
 
 ## Closed positions (for reference / learning what worked)
 
-| Item | Buy price | Sell price | Sell venue | Net ROI | Notes |
-|---|---|---|---|---|---|
+Per the price research methodology in `instructions.md` (added 2026-09-15): log every closed position here with both its original projected ROI and what actually happened, so weekly deep dives can spot whether certain sets/eras/card types are systematically over- or under-shooting their projections.
+
+| Item | Buy price | Projected ROI | Sell price | Actual ROI | Sell venue | Notes |
+|---|---|---|---|---|---|---|
 | | | | | | |
