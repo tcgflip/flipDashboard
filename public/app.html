@@ -77,17 +77,7 @@
   .tag{display:inline-block; font-size:12px; color:var(--coral); margin-top:4px;}
   .directions{font-size:13px; color:var(--gold); text-decoration:none; display:inline-block; margin-top:6px;}
 
-  .buy-row{padding:16px 0;}
-  .buy-row + .buy-row{border-top:1px solid var(--line);}
-  .buy-body{display:flex; gap:12px;}
   .card-img{width:56px; height:auto; border-radius:4px; flex-shrink:0;}
-  .buy-main{flex:1; min-width:0;}
-  .buy-head{display:flex; justify-content:space-between; align-items:baseline; gap:12px;}
-  .price{font-size:22px; font-weight:600; color:var(--gold); white-space:nowrap; font-family:'IBM Plex Mono',monospace;}
-  .market{color:var(--text-dim); font-size:13px; margin-left:6px; font-family:'IBM Plex Mono',monospace;}
-  .roi{color:var(--coral); font-size:13px; font-weight:500; text-align:right;}
-  .thesis{color:var(--text-dim); font-size:13px; margin-top:6px; max-width:52ch;}
-  .source{color:var(--text-faint); font-size:11px; margin-top:6px; display:block;}
 
   .buy-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(148px,1fr)); gap:14px;}
   .buy-tile{
@@ -106,14 +96,12 @@
   .tile-price-row{display:flex; align-items:baseline; justify-content:space-between; gap:6px; margin-top:5px;}
   .tile-price{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:16px; color:var(--gold); white-space:nowrap;}
   .tile-roi{font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:var(--gain); white-space:nowrap;}
+  .tile-roi.verdict-sell{color:var(--gold);}
+  .tile-roi.verdict-hold{color:var(--text-dim);}
+  .tile-roi.verdict-watch{color:var(--coral);}
   .tile-meta{color:var(--text-faint); font-size:10.5px; font-family:'IBM Plex Mono',monospace; margin-top:2px;}
   .tile-thesis{color:var(--text-dim); font-size:11.5px; margin-top:6px; line-height:1.35;}
   .tile-source{color:var(--text-faint); font-size:10px; margin-top:6px;}
-  .tcg-link{color:var(--gold); font-size:13px; text-decoration:none; display:inline-block; margin-top:6px;}
-  .verdict{font-size:13px; font-weight:600; margin-top:4px;}
-  .verdict-sell{color:var(--gold);}
-  .verdict-hold{color:var(--text);}
-  .verdict-watch{color:var(--coral);}
   .empty{color:var(--text-dim); font-size:14px;}
   .warn{border-left:3px solid var(--coral); padding:12px 16px; background:var(--panel); border-radius:0 8px 8px 0; margin-top:16px;}
   .warn .item-name{color:var(--text);}
@@ -375,20 +363,27 @@ function renderHoldings(holdings) {
     el.innerHTML = '<p class="empty">Nothing bought yet. Once you pick up a card from the buy list, it shows up here with a hold/sell verdict each run.</p>';
     return;
   }
-  el.innerHTML = holdings.map(h => {
+  const tiles = holdings.map(h => {
     const verdictClass = h.verdict === 'sell' ? 'verdict-sell' : h.verdict === 'watch' ? 'verdict-watch' : 'verdict-hold';
     const verdictLabel = h.verdict === 'sell' ? 'Sell now' : h.verdict === 'watch' ? 'Watch' : 'Hold';
-    return `<div class="buy-row"><div class="buy-body">
-      ${cardImageSlot(h.card, h.set, h.cardId)}
-      <div class="buy-main">
-        <div class="item-name">${h.card}${h.set ? ' · ' + h.set : ''}</div>
-        <div class="item-note">Bought $${h.buyPrice != null ? h.buyPrice.toFixed(2) : '—'}${h.buyDate ? ' on ' + h.buyDate : ''}</div>
-        <div class="verdict ${verdictClass}">${verdictLabel}${h.currentMarketPrice != null ? ' · mkt $' + h.currentMarketPrice.toFixed(2) : ''}</div>
-        <div class="thesis">${h.recommendation || ''}</div>
-        <a class="tcg-link" href="${tcgplayerUrl(h.card, h.set)}" target="_blank" rel="noopener">View on TCGplayer</a>
+    const metaParts = [];
+    if (h.currentMarketPrice != null) metaParts.push(`mkt $${h.currentMarketPrice.toFixed(2)}`);
+    if (h.buyDate) metaParts.push(`bought ${h.buyDate}`);
+    return `<a class="buy-tile" href="${tcgplayerUrl(h.card, h.set)}" target="_blank" rel="noopener">
+      <div class="tile-img">${cardImageSlot(h.card, h.set, h.cardId)}</div>
+      <div class="tile-body">
+        <div class="tile-name">${h.card}</div>
+        <div class="tile-set">${h.set || ''}</div>
+        <div class="tile-price-row">
+          <span class="tile-price">${h.buyPrice != null ? '$' + h.buyPrice.toFixed(2) : '—'}</span>
+          <span class="tile-roi ${verdictClass}">${verdictLabel}</span>
+        </div>
+        <div class="tile-meta">${metaParts.join(' · ')}</div>
+        <div class="tile-thesis">${h.recommendation || ''}</div>
       </div>
-    </div></div>`;
+    </a>`;
   }).join('');
+  el.innerHTML = `<div class="buy-grid">${tiles}</div>`;
   fillLookupImages();
 }
 

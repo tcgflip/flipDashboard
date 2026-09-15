@@ -37,15 +37,15 @@ export default {
 
     if (url.pathname === '/api/card-image' && request.method === 'GET') {
       const name = url.searchParams.get('name');
-      const set = url.searchParams.get('set') || '';
+      const rawSet = url.searchParams.get('set') || '';
       if (!name) return json({ image: null });
-      const q = set ? `name:"${name}" set.name:"${set}"` : `name:"${name}"`;
+      // data.json's "set" field is a display string like
+      // "Evolving Skies (SWSH07) #095/203, non-alt-art" — the API's set.name
+      // is just "Evolving Skies", so strip the set-code/card-number/variant tail.
+      const set = rawSet.replace(/\s*\([^)]*\)/g, '').replace(/\s*#.*$/, '').trim();
       try {
-        const apiRes = await fetch(`https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=1`);
-        if (!apiRes.ok) return json({ image: null });
-        const data = await apiRes.json();
-        const card = data.data && data.data[0];
-        return json({ image: card ? card.images.small : null });
+        const image = (await lookupCardImage(name, set)) || (set ? await lookupCardImage(name, '') : null);
+        return json({ image });
       } catch (e) {
         return json({ image: null });
       }
@@ -186,6 +186,17 @@ function cookie(name, value, opts = {}) {
   if (opts.expirePast) parts.push('Expires=Thu, 01 Jan 1970 00:00:00 GMT');
   else if (opts.maxAge) parts.push(`Max-Age=${opts.maxAge}`);
   return parts.join('; ');
+}
+
+// ---- Card image lookup ----
+
+async function lookupCardImage(name, set) {
+  const q = set ? `name:"${name}" set.name:"${set}"` : `name:"${name}"`;
+  const apiRes = await fetch(`https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=1`);
+  if (!apiRes.ok) return null;
+  const data = await apiRes.json();
+  const card = data.data && data.data[0];
+  return card ? card.images.small : null;
 }
 
 // ---- Strategy state ----
