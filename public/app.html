@@ -126,6 +126,9 @@
   .tile-reasons li{position:relative; margin-bottom:3px;}
   .tile-reasons li::before{content:"–"; position:absolute; left:-13px; color:var(--text-faint);}
   .tile-source{color:var(--text-faint); font-size:10px; margin-top:6px;}
+  .tile-links{display:flex; flex-wrap:wrap; gap:4px 10px; margin-top:8px;}
+  .tile-links a{color:var(--gold); font-size:11px; text-decoration:none; font-family:'IBM Plex Mono',monospace;}
+  .tile-links a:hover{text-decoration:underline;}
   .empty{color:var(--text-dim); font-size:14px;}
   .warn{border-left:3px solid var(--coral); padding:12px 16px; background:var(--panel); border-radius:0 8px 8px 0; margin-top:16px;}
   .warn .item-name{color:var(--text);}
@@ -234,8 +237,14 @@ function cardImageUrl(cardId) {
   return `https://images.pokemontcg.io/${cardId.slice(0, idx)}/${cardId.slice(idx + 1)}.png`;
 }
 
-function tcgplayerUrl(name, set) {
-  return `https://www.tcgplayer.com/search/pokemon/product?productLineName=pokemon&q=${encodeURIComponent((name + ' ' + (set || '')).trim())}`;
+function tcgplayerUrl(item) {
+  if (item.tcgplayerUrl) return item.tcgplayerUrl;
+  return `https://www.tcgplayer.com/search/pokemon/product?productLineName=pokemon&q=${encodeURIComponent((item.card + ' ' + (item.set || '')).trim())}`;
+}
+
+function pricechartingUrl(item) {
+  if (item.pricechartingUrl) return item.pricechartingUrl;
+  return `https://www.pricecharting.com/search-products?q=${encodeURIComponent((item.card + ' ' + (item.set || '')).trim())}&type=prices`;
 }
 
 function parseROI(str) {
@@ -374,7 +383,7 @@ function renderBuyList(data) {
       const typeLabel = TYPE_LABELS[b.type] || b.type || '';
       const { name: setName, number: setNumber, rarity } = parseSet(b.set);
       const secondary = b.ev != null ? `EV $${b.ev.toFixed(2)}` : (b.marketPrice != null ? `mkt $${b.marketPrice.toFixed(2)}` : '');
-      return `<a class="buy-tile" href="${tcgplayerUrl(b.card, b.set)}" target="_blank" rel="noopener">
+      return `<div class="buy-tile">
         <div class="tile-img">${cardImageSlot(b.card, b.set, b.cardId)}</div>
         <div class="tile-body">
           <div class="tile-name">${b.card}${b.grade ? ' · ' + b.grade : ''}</div>
@@ -387,8 +396,12 @@ function renderBuyList(data) {
           <div class="tile-meta">${secondary ? secondary + ' · ' : ''}by ${formatShortDate(b.sellBy)}</div>
           ${renderReasons(b.thesis)}
           <div class="tile-source">${b.source}</div>
+          <div class="tile-links">
+            <a href="${tcgplayerUrl(b)}" target="_blank" rel="noopener">TCGplayer ↗</a>
+            <a href="${pricechartingUrl(b)}" target="_blank" rel="noopener">PriceCharting ↗</a>
+          </div>
         </div>
-      </a>`;
+      </div>`;
     }).join('');
     buyEl.innerHTML = `<div class="buy-grid">${tiles}</div>`;
   }
@@ -443,7 +456,7 @@ function renderHoldings(holdings) {
     const metaParts = [];
     if (h.currentMarketPrice != null) metaParts.push(`mkt $${h.currentMarketPrice.toFixed(2)}`);
     if (h.buyDate) metaParts.push(`bought ${h.buyDate}`);
-    return `<a class="buy-tile" href="${tcgplayerUrl(h.card, h.set)}" target="_blank" rel="noopener">
+    return `<a class="buy-tile" href="${tcgplayerUrl(h)}" target="_blank" rel="noopener">
       <div class="tile-img">${cardImageSlot(h.card, h.set, h.cardId)}</div>
       <div class="tile-body">
         <div class="tile-name">${h.card}</div>
