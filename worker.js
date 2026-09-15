@@ -114,13 +114,19 @@ async function handleGoogleCallback(request, url, env) {
       grant_type: 'authorization_code'
     })
   });
-  if (!tokenRes.ok) return redirectWithError(url, 'auth_failed', clearState);
+  if (!tokenRes.ok) {
+    const detail = await tokenRes.json().catch(() => null);
+    return redirectWithError(url, 'auth_failed', clearState, `token:${detail?.error || tokenRes.status}`);
+  }
   const tokens = await tokenRes.json();
 
   // Google's tokeninfo endpoint verifies the id_token's signature/expiry server-side
   // and hands back its claims, so the Worker never has to do JWT verification itself.
   const infoRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(tokens.id_token)}`);
-  if (!infoRes.ok) return redirectWithError(url, 'auth_failed', clearState);
+  if (!infoRes.ok) {
+    const detail = await infoRes.json().catch(() => null);
+    return redirectWithError(url, 'auth_failed', clearState, `tokeninfo:${detail?.error_description || infoRes.status}`);
+  }
   const claims = await infoRes.json();
 
   const allowed = env.ALLOWED_EMAILS.split(',').map(e => e.trim().toLowerCase());
@@ -155,8 +161,10 @@ async function getSession(request, env) {
   return raw ? JSON.parse(raw) : null;
 }
 
-function redirectWithError(url, code, extraCookie) {
-  const headers = new Headers({ Location: `${url.origin}/?error=${code}` });
+function redirectWithError(url, code, extraCookie, detail) {
+  const params = new URLSearchParams({ error: code });
+  if (detail) params.set('detail', detail);
+  const headers = new Headers({ Location: `${url.origin}/?${params}` });
   if (extraCookie) headers.append('Set-Cookie', extraCookie);
   return new Response(null, { status: 302, headers });
 }

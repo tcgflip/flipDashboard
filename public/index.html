@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0B0E14">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='36' fill='%230B0E14'/%3E%3Ctext x='90' y='118' font-family='Georgia,serif' font-weight='700' font-size='80' fill='%23D9A63E' text-anchor='middle'%3EPF%3C/text%3E%3C/svg%3E">
-<title>Poke Fips</title>
+<title>Poke Flips</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -106,7 +106,7 @@
 
   <div id="error" class="error-banner" role="alert"></div>
 
-  <h1 class="wordmark"><span>poke</span><span class="flip">fips</span></h1>
+  <h1 class="wordmark"><span>poke</span><span class="flip">flips</span></h1>
 
   <p class="tagline">Buy list, holdings, and the local card-show calendar — tracked like a portfolio, updated every day.</p>
 
@@ -134,6 +134,8 @@ const err = params.get('error');
 if (err && errors[err]) {
   const el = document.getElementById('error');
   el.textContent = errors[err];
+  const detail = params.get('detail');
+  if (detail) el.textContent += ` (${detail})`;
   el.classList.add('show');
 }
 
