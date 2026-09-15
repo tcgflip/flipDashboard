@@ -103,6 +103,10 @@ async function handleGoogleCallback(request, url, env) {
     return redirectWithError(url, 'invalid_state', clearState);
   }
 
+  if (!env.GOOGLE_CLIENT_SECRET) {
+    return redirectWithError(url, 'auth_failed', clearState, 'secret_not_bound');
+  }
+
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -116,7 +120,7 @@ async function handleGoogleCallback(request, url, env) {
   });
   if (!tokenRes.ok) {
     const detail = await tokenRes.json().catch(() => null);
-    return redirectWithError(url, 'auth_failed', clearState, `token:${detail?.error || tokenRes.status}`);
+    return redirectWithError(url, 'auth_failed', clearState, `token:${detail?.error || tokenRes.status}:secretlen${env.GOOGLE_CLIENT_SECRET.length}`);
   }
   const tokens = await tokenRes.json();
 
