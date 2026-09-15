@@ -107,6 +107,13 @@
   .tile-body{padding:10px 12px 12px; display:flex; flex-direction:column; gap:3px; flex:1;}
   .tile-name{font-weight:600; font-size:13.5px; line-height:1.25;}
   .tile-set{color:var(--text-faint); font-size:11px; line-height:1.3;}
+  .tile-set .set-number{font-family:'IBM Plex Mono',monospace;}
+  .tile-tags{display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;}
+  .tile-tag{
+    font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.02em;
+    color:var(--text-faint); background:var(--panel-2); border:1px solid var(--line);
+    border-radius:4px; padding:2px 6px; white-space:nowrap;
+  }
   .tile-price-row{display:flex; align-items:baseline; justify-content:space-between; gap:6px; margin-top:5px;}
   .tile-price{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:16px; color:var(--gold); white-space:nowrap;}
   .tile-roi{font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:var(--gain); white-space:nowrap;}
@@ -243,6 +250,19 @@ function formatShortDate(dateStr) {
   return `${MONTHS[d.getMonth()]} ${d.getDate()}`;
 }
 
+function parseSet(setStr) {
+  if (!setStr) return { name: '', number: '', rarity: '' };
+  const [main, rarityRaw] = setStr.split(',').map(s => s.trim());
+  const numberMatch = main.match(/#\S+/);
+  const number = numberMatch ? numberMatch[0] : '';
+  const name = main.replace(/\([^)]*\)/g, '').replace(/#\S+/, '').trim();
+  return { name, number, rarity: rarityRaw || '' };
+}
+
+function capitalize(str) {
+  return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+}
+
 function renderReasons(thesis) {
   if (Array.isArray(thesis)) {
     return `<ul class="tile-reasons">${thesis.map(r => `<li>${r}</li>`).join('')}</ul>`;
@@ -352,12 +372,14 @@ function renderBuyList(data) {
   } else {
     const tiles = visible.map(b => {
       const typeLabel = TYPE_LABELS[b.type] || b.type || '';
+      const { name: setName, number: setNumber, rarity } = parseSet(b.set);
       const secondary = b.ev != null ? `EV $${b.ev.toFixed(2)}` : (b.marketPrice != null ? `mkt $${b.marketPrice.toFixed(2)}` : '');
       return `<a class="buy-tile" href="${tcgplayerUrl(b.card, b.set)}" target="_blank" rel="noopener">
         <div class="tile-img">${cardImageSlot(b.card, b.set, b.cardId)}</div>
         <div class="tile-body">
           <div class="tile-name">${b.card}${b.grade ? ' · ' + b.grade : ''}</div>
-          <div class="tile-set">${typeLabel}${b.set ? ' · ' + b.set : ''}</div>
+          <div class="tile-set">${setName}${setNumber ? ` <span class="set-number">${setNumber}</span>` : ''}</div>
+          <div class="tile-tags"><span class="tile-tag">${typeLabel}</span>${rarity ? `<span class="tile-tag">${capitalize(rarity)}</span>` : ''}</div>
           <div class="tile-price-row">
             <span class="tile-price">$${b.targetPrice.toFixed(2)}</span>
             <span class="tile-roi">${b.expectedROI}</span>
@@ -417,6 +439,7 @@ function renderHoldings(holdings) {
   const tiles = holdings.map(h => {
     const verdictClass = h.verdict === 'sell' ? 'verdict-sell' : h.verdict === 'watch' ? 'verdict-watch' : 'verdict-hold';
     const verdictLabel = h.verdict === 'sell' ? 'Sell now' : h.verdict === 'watch' ? 'Watch' : 'Hold';
+    const { name: setName, number: setNumber, rarity } = parseSet(h.set);
     const metaParts = [];
     if (h.currentMarketPrice != null) metaParts.push(`mkt $${h.currentMarketPrice.toFixed(2)}`);
     if (h.buyDate) metaParts.push(`bought ${h.buyDate}`);
@@ -424,7 +447,8 @@ function renderHoldings(holdings) {
       <div class="tile-img">${cardImageSlot(h.card, h.set, h.cardId)}</div>
       <div class="tile-body">
         <div class="tile-name">${h.card}</div>
-        <div class="tile-set">${h.set || ''}</div>
+        <div class="tile-set">${setName}${setNumber ? ` <span class="set-number">${setNumber}</span>` : ''}</div>
+        ${rarity ? `<div class="tile-tags"><span class="tile-tag">${capitalize(rarity)}</span></div>` : ''}
         <div class="tile-price-row">
           <span class="tile-price">${h.buyPrice != null ? '$' + h.buyPrice.toFixed(2) : '—'}</span>
           <span class="tile-roi ${verdictClass}">${verdictLabel}</span>
