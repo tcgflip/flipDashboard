@@ -4,6 +4,25 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-15 — Daily quick-check
+
+**Scope:** Lightweight spot-check per `instructions.md` — imminent events, price sanity-check on current buy-list picks, new-giveaway scan, and the daily website-interface pass.
+
+**Checked:**
+- Noted that a same-day-earlier session (commit `72235b2`, ~03:15 UTC, before this run) raised the raw-single/slab price cap from $50 to $1,000 in `instructions.md` and added the daily UI-polish routine, but left the buy list itself un-regenerated (still the original $50-cap-era 6 singles + 1 slab) and didn't log a run. `data.json`'s `singlesSlabsRule` text still said "$50" — corrected to "$1,000" to match `instructions.md`. Full re-sourcing of higher-value picks under the new cap is deferred to the next weekly deep dive — out of scope for a lightweight daily check.
+- Bayview Night Market (today, Sept 15) — reconfirmed on via WebSearch, no change.
+- Aloha Card Shop 30th Celebration listings — still none confirmed, 1 day out from the Sept 16 launch. Unchanged; still needs the direct post-launch recheck already flagged.
+- Rayquaza VMAX price flag — attempted to resolve directly via WebFetch to TCGplayer and the pokemontcg.io API; both still return EGRESS_BLOCKED, consistent with prior runs. Same unresolved $15.39 vs. $10.31 conflict stands, no new data either way.
+- New giveaways: none found.
+- New show sighting: "Aloha Comic Con Card Pavilion" (Hawaii Convention Center, part of Amazing Comic Con Aloha) — ran Sept 12 2026, found after the fact via WebSearch. Not actionable this cycle; noted in `context.md` to check for a recurring/2027 date before adding to the active calendar.
+- Holdings: nothing to advise on — everything is still Proposed.
+
+**Website interface pass:** Found and fixed a real bug — the dashboard's browser-tab title and header both read "Poke Fips" instead of "Poke Flips" (typo introduced by a manual, non-Claude commit on 2026-09-13 and never caught since). Fixed both occurrences in `index.html`. Nothing else stood out as a clear, scoped improvement this run, so kept the change to just this fix.
+
+**Files updated:** `context.md` (new show sighting, egress-status update), `holdings-log.md` (this check's note), `data.json` (`generated_at` bump, `singlesSlabsRule` cap text corrected to $1,000), `index.html` (title/header typo fix), `run-log.md` (this entry).
+
+---
+
 ## 2026-09-14 — Daily quick-check (second same-day run, ~4 hours after the quick-check below)
 
 **Scope:** Scheduled daily quick-check fired again the same calendar day as the entry below (first quick-check + weekly deep dive) — same lightweight scope per `instructions.md`: imminent events, price sanity-check, giveaway scan. Noting the same-day repeat here in case the schedule is firing more often than once/day; nothing in this session shows the underlying cadence, so flagging for Ryan's awareness rather than assuming it's a bug.
