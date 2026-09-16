@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-15",
+  "generated_at": "2026-09-16",
   "strategy": {
     "productTypes": { "sealed": true, "rawSingles": true, "slabs": true },
     "sealedRule": "Only recommend sealed product where calculated box/pack EV exceeds current market price by 15%+",
@@ -7,7 +7,7 @@
     "holdPeriod": "Flexible, days–weeks, longer only with a real catalyst date"
   },
   "shows": [
-    { "name": "Aloha Card Show", "venue": "Neal S. Blaisdell Center Exhibition Hall", "start_date": "2026-09-19", "end_date": "2026-09-20", "display_dates": "Sept 19–20", "note": "10am–6pm both days, $10/day, free all day for Aloha Pacific FCU cardholders" },
+    { "name": "Aloha Card Show", "venue": "Neal S. Blaisdell Center Exhibition Hall", "start_date": "2026-09-19", "end_date": "2026-09-20", "display_dates": "Sept 19–20", "note": "10am–6pm both days, $10/day, free all day for Aloha Pacific FCU cardholders. Bigger venue this fall, 300+ tables, WWE Legends signing draws extra foot traffic." },
     { "name": "Urban Soccer Hawaii Card Show", "venue": "218 Mohonua Pl, Honolulu", "start_date": "2026-09-26", "end_date": "2026-09-26", "display_dates": "Sept 26", "note": "Confirmed via tcdb.com and hawaiicardshows.com — corrected from earlier Sept 27 estimate" },
     { "name": "Pokémon, Sports Cards & More", "venue": "Ala Moana Hotel, Hibiscus Ballroom & Garden Lanai", "start_date": "2026-09-27", "end_date": "2026-09-27", "display_dates": "Sept 27", "note": "10am–5pm" },
     { "name": "Keep It Aloha Card Show", "venue": "SALT at Our Kakaako", "start_date": "2026-10-03", "end_date": "2026-10-04", "display_dates": "Oct 3–4", "note": "First weekend of the month, 10am–6pm, free, festival-style" },

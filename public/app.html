@@ -510,8 +510,11 @@ function render(data) {
     .sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
   document.getElementById('shows-list').innerHTML = shows.length ? shows.map(s => {
     const d = new Date(s.start_date + 'T00:00:00');
-    const daysUntil = Math.ceil((d - new Date()) / 86400000);
-    const countdown = daysUntil > 1 ? `In ${daysUntil} days` : daysUntil === 1 ? 'Tomorrow' : daysUntil === 0 ? 'Today' : '';
+    const end = new Date((s.end_date || s.start_date) + 'T23:59:59');
+    const now = new Date();
+    const daysUntil = Math.ceil((d - now) / 86400000);
+    const countdown = now >= d && now <= end ? 'Happening now'
+      : daysUntil > 1 ? `In ${daysUntil} days` : daysUntil === 1 ? 'Tomorrow' : daysUntil === 0 ? 'Today' : '';
     const mapsUrl = 'https://maps.apple.com/?q=' + encodeURIComponent(s.venue);
     return `<div class="row">
       <div class="date-badge"><span class="day">${d.getDate()}</span><span class="month">${MONTHS[d.getMonth()]}</span></div>

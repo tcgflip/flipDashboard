@@ -2,7 +2,7 @@
 
 This is a living document. Add to it whenever a run turns up a new shop, show series, or source — or finds that one of these is stale/dead.
 
-_Last researched: 2026-09-14 (weekly deep dive; same-day daily quick-check also run, see run-log.md)._
+_Last researched: 2026-09-16 (daily quick-check; see run-log.md for full history)._
 
 ## Card show calendar sources (check these, don't rely on memory)
 
@@ -24,7 +24,7 @@ _Last researched: 2026-09-14 (weekly deep dive; same-day daily quick-check also 
 - **Bayview Night Market** — Bayview Golf Course, 45-285 Kāneʻohe Bay Dr, **Kāneʻohe** (CONFIRMED 2026-09-14 daily check — venue is Windward side only, not ʻAiea; earlier "ʻAiea/Kāneʻohe" phrasing in this file was ambiguous) — hosted by @pkmn.collective, 1st & 3rd Tuesdays monthly (Sept 15, Oct 6, Oct 20 2026), free entry, Pokémon/One Piece/sports sealed+singles+slabs
 - **808 Showcase Trade Night** — Pearlridge Center, Wai Makai 2nd level, Aiea — 3rd Friday monthly, 4-8pm (confirmed via pearlridgeonline.com) — Sept 18, Oct 16 2026
 - **West Side Card Show** — Kroc Center, **Kapolei** (Leeward Oʻahu; hosted by Rocket Relics) — CORRECTED 2026-09-14, previously mislabeled "Kāneʻohe" in this file (that's Bayview Night Market's location, Windward side, a different venue entirely) — next confirmed West Side Card Show IV, Dec 5-6 2026
-- **Aloha Card Show** — Neal S. Blaisdell Center Exhibition Hall — ~2x/year, general collectibles (Sept 19-20 2026 confirmed via alohacardshow.com: 10am-6pm both days; $10/day general admission (ages 7+); free all day both days for Aloha Pacific FCU cardholders, who also get early entry 9-10am)
+- **Aloha Card Show** — Neal S. Blaisdell Center Exhibition Hall — ~2x/year, general collectibles (Sept 19-20 2026 confirmed via alohacardshow.com: 10am-6pm both days; $10/day general admission (ages 7+); free all day both days for Aloha Pacific FCU cardholders, who also get early entry 9-10am) — UPDATE 2026-09-16: this fall edition is a bigger venue than usual, 300+ vendor tables, with WWE Legends Jake "The Snake" Roberts & Cheryl Roberts doing photo ops/signings (not a Pokémon-specific draw, but bigger overall foot traffic than a typical Aloha Card Show)
 - **Hawaii Pop Con** — Blaisdell Center — annual, January
 - **HNL Card Fest** — Hawaii Convention Center — annual, July
 - **Spotlight Card Show (Honolulu)** — Hawaii Convention Center — touring mainland show now running a Honolulu date; confirmed Oct 24-25 2026, 11am-5pm, 450+ vendors (Pokémon, sports, One Piece, Yu-Gi-Oh). Worth tracking as a recurring addition — check if it repeats.
@@ -40,7 +40,7 @@ Confirmed dates as of this run (verify again before acting — schedules move): 
 - **ToyLynx / Ideal808** — 650 Iwilei Rd, Honolulu (near Costco) — sealed, singles, Japanese imports, runs tournaments + biweekly trade nights
 - **TCG Tavern** — 903 Isenberg St, Honolulu — full Pokémon inventory, trade days (next Oct 26 2026)
 - **Space 62** — Ala Moana Center, 3rd floor near Buffalo Wild Wings — Pokémon selection + graded slabs
-- **Aloha Card Shop** — Pokémon sealed/singles/sports; also sells online (alohacardshop.com, eBay store "alohatcg"); ~1,847 Pokémon SKUs listed online as of the 2026-09-13 daily check, still no 30th Celebration/Anniversary set listings confirmed as of 2026-09-14 (direct site access blocked this run — see network note below; set launches 2026-09-16, so this needs a direct re-check right around/after launch). Currently lists a "Pokémon Day 2026 Collection" (stamped Pikachu foil promo + 30th-anniversary coin + 3 packs) — that's a National Pokémon Day tie-in, NOT the 30th Celebration set itself.
+- **Aloha Card Shop** — Pokémon sealed/singles/sports; also sells online (alohacardshop.com, eBay store "alohatcg"); ~1,847 Pokémon SKUs listed online as of the 2026-09-13 daily check, still no 30th Celebration/Anniversary set listings confirmed as of 2026-09-16 — set launched today (Sept 16) but direct WebFetch to alohacardshop.com is still EGRESS_BLOCKED (see network note below) and WebSearch didn't surface an alohacardshop.com-specific 30th Celebration product page either, only third-party retailers (Hobbiesville, Best Buy, Pokemon.com) confirming the set itself released today with an ETB at $49.99 MSRP (no booster box in this lineup, packs only come inside bundle products). This routine still can't confirm firsthand whether/how Aloha Card Shop is stocking it — needs an actual site visit or in-person check, this environment cannot verify. Currently lists a "Pokémon Day 2026 Collection" (stamped Pikachu foil promo + 30th-anniversary coin + 3 packs) — that's a National Pokémon Day tie-in, NOT the 30th Celebration set itself.
 - **808 Showcase** — Pokémon inventory, trade nights
 - **Nocturnal TCG & Collectibles** — Honolulu (shopnocturnaltcg.com)
 - **Final Form Hawaii** — finalformhawaii.com

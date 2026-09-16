@@ -4,6 +4,24 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-16 — Daily quick-check (scheduled)
+
+**Scope:** Standard lightweight scope per `instructions.md`: imminent events, price sanity-check, giveaway scan, holdings review, website interface pass.
+
+**Checked:**
+- Aloha Card Show (Sept 19-20, Blaisdell) — reconfirmed via WebSearch, dates/hours/admission unchanged. New detail found: this fall edition is bigger than usual (300+ vendor tables) with WWE Legends Jake "The Snake" Roberts & Cheryl Roberts signings — added to `context.md` as a foot-traffic note, not Pokémon-specific.
+- 30th Celebration set launch (today, Sept 16) — the set itself launched on schedule per third-party retailers (Hobbiesville, Best Buy, Pokemon.com), but Aloha Card Shop's own stocking of it still couldn't be confirmed: direct WebFetch to alohacardshop.com remains EGRESS_BLOCKED, and WebSearch didn't surface an alohacardshop.com product page for it. Flag stays open — needs an in-person/browser check this environment can't perform.
+- Rayquaza VMAX price conflict ($15.39 vs. $10.31) — re-searched, same unresolved spread, no new data either way. Flag stands, no change made.
+- Egress status — re-tested api.pokemontcg.io and alohacardshop.com, both still EGRESS_BLOCKED, consistent with every prior run.
+- New giveaways: none found.
+- Holdings: nothing to advise on — all items still Proposed.
+
+**Website interface pass:** Found and fixed a real bug — a multi-day show's countdown label went blank on its later days (e.g. a 2-day show showed "Today" on day one but nothing on day two, despite the show filter correctly keeping it listed as ongoing). Fixed in `app.html`: the countdown now shows "Happening now" for any show currently between its `start_date` and `end_date`.
+
+**Files updated:** `context.md` (Aloha Card Show detail, Aloha Card Shop launch-day status, last-researched date), `holdings-log.md` (this check's note), `public/data.json` (`generated_at` bump, Aloha Card Show note), `public/app.html` (multi-day show countdown fix), `run-log.md` (this entry).
+
+---
+
 ## 2026-09-15 — Daily quick-check (scheduled, later same day)
 
 **Scope:** Scheduled daily quick-check, firing several hours after the out-of-band runs logged below (all also dated 2026-09-15). Standard lightweight scope per `instructions.md`: imminent events, price sanity-check, giveaway scan, holdings review, website interface pass.
