@@ -4,6 +4,38 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-17 — Weekly deep dive
+
+**Scope:** Full weekly-scope pass per `instructions.md` — show calendar re-verification, sealed-product EV re-run (30th Celebration has now launched), price research methodology reapplied to all 10 buy-list items, a rejected-pick sanity check, and a community-signal check. Research was split across 4 parallel background agents (calendar, sealed EV, singles/slabs pricing, community signal + rejected-pick check) to cover the full scope thoroughly.
+
+**Show calendar:** All previously-tracked shows reconfirmed unchanged. New: Urban Soccer Hawaii Card Show Nov 28, Pokémon/Sports Cards & More ~Nov 29 (venue TBD), Bayview Night Market Nov 3/17, 808 Showcase Trade Night Nov 20 (the latter two noted in `context.md` only, per the existing pattern of not putting shop trade nights in the dashboard's headline shows list). Fixed an omission: West Side Card Show IV (Dec 5-6, Kapolei) has been confirmed since 2026-09-14 but was never added to `data.json`'s shows array — added now. **Aloha Card Shop's 30th Celebration listings are now confirmed live** (multiple SKUs found), resolving a flag that's stood since 2026-09-13. One ambiguity noted, not resolved: a "Nov 1" Urban Soccer date turned up one day after the confirmed Oct 31 date — may be a 2-day event, not a separate show; left out of `data.json` pending clarification. "Uncle Tony's Trade Night" is now treated as just an informal alt-name for 808 Showcase Trade Night rather than a separately-tracked event, after repeated searches found no independent evidence of it.
+
+**Sealed EV:** 30th Celebration line (launched Sept 16) technically clears the 15-20% EV-over-price rule on paper (Booster Bundle EV ≈$253 vs. $114 street price; ETB EV ≈$388 vs. ~$157-191 street), but ~81% of per-pack EV rides on the <6% combined odds of pulling one of 7 Special Illustration Rares or 2 Futuristic Rares, priced off thin day-1/day-2 sales (a Mew ex Futuristic Rare "priced" at ~$2,466 off what's likely 1-2 sales). Judgment call: treating this as launch-hype pricing on both sides of the equation (box prices are also 140-300% over MSRP) rather than a real, actionable edge — **no sealed pick added this run**, revisit in 2-3 weeks once the market settles. Mega Evolution: Pitch Black re-checked — box price dropped to $197.78 (from a $281 spike) but chase-card values (Mega Venusaur ex, Mega Lucario ex) dropped in step, so the EV deficit is essentially unchanged (EV ≈$129/box, -35% margin) — still rejected. Espeon ex/Umbreon ex Battle Decks (Oct 30) — contents are now public but no real secondary pricing exists yet for the guaranteed Victini/Zeraora promos; also flagging structurally that these are fixed-contents decks, not randomized packs, so the EV-math framing will need to change once pricing does exist.
+
+**Price corrections:**
+- **Giratina VSTAR PSA 10** — major correction. The $150-220 range this pick has carried since 2026-09-15 traced to an aggregator range with no dated comps behind it. Found 4 real PSA "Auction Prices Realized" sold comps this pass ($66.56, $76, $79.99, $94, avg ~$79-80). Cut market $185→$80, target $157→$68 (a >50% correction). Flagging a residual card-number ambiguity in search results (#131/196 vs #201/196) as worth a firsthand recheck, though #201/196 was independently confirmed via TCGplayer's own listing on 2026-09-15.
+- **Radiant Charizard PSA 9** — this pick's sold-comp range has been $10.50-$40 since it was first added (2026-09-14), but its market price was set at $38 — effectively the *top* of that range, not the "low-to-middle" this routine's own methodology calls for. This pass could only reconfirm the $10.50 low end. Corrected to the low-middle of the known range: market $38→$20, target $32→$17.
+- **Mew VMAX (raw)** — found a real ~24% cross-source conflict (SCI sold comp $21.13 vs. PokeScope $16.03). Kept the SCI figure (an actual sold transaction) but flagged the conflict explicitly per methodology's disagreement-flag rule.
+- **Umbreon VMAX (raw)** — no price change, but its sold comp is up ~33% over the last 30 days, a genuinely rising trend heading into the Oct 30 Battle Deck catalyst.
+- Charizard ex, Radiant Charizard (raw), Espeon VMAX, Rayquaza VMAX, Mew VMAX PSA 10, Pikachu VMAX PSA 10 — rechecked, no material change. Pikachu VMAX PSA 10 has an odd raw>graded price inversion (raw reads $147-180, above the $52-88 graded range) flagged for a future manual check.
+
+**New picks:**
+- **Umbreon VMAX PSA 9 (Evolving Skies #095/203, non-alt-art)** — the contamination that blocked this pick twice before (2026-09-14, 2026-09-15) is resolved: a per-print price-guide page (Poke Plug, keyed to the exact print) cleanly isolates it from the unrelated "Moonbreon" alt-art secret (#215/203) that was bleeding into prior generic-name searches. Clean value ~$31. Added at target $26, ~10% ROI, catalyst Oct 30 Battle Deck. This sourcing technique is now documented in `context.md` for future runs.
+- **Terapagos ex (Stellar Crown #170/142, SIR)** — new raw single, box-mascot of the era's finale set, comps up ~44% in the last 30 days. Target $35.50, ~9% ROI.
+- **Lillie's Clefairy ex (Ascended Heroes #280/217, SIR)** — added as an explicitly flagged thin-data stretch pick (only one clean sold comp, $185) to test the higher $1,000 cap's intent to reach into higher-value modern chase cards.
+
+**Rejected-pick sanity check:** Iono (Paldea Evolved) has declined ~38.5% since release — the 2026-09-14 rejection was correct. Charizard ex 151 PSA 10 — actual solds cluster $30-50, confirming the earlier reading over a conflicting $126 tracker figure; still not add-worthy. No sign the bar has been too cautious.
+
+**Community signal:** No new Bleeding Cool Value Watch article since ~2026-09-10. This month's PokeBeach/Ravaver coverage reaffirms the standing SIR-over-gold/rainbow preference. No new single card crowned a fresh tournament "meta staple." The 30th Celebration launch (first-ever simultaneous worldwide TCG launch) is drawing outsized buzz, consistent with the sealed-EV hype-pricing finding above.
+
+**Standard scan:** No new giveaways found. No holdings to advise on — everything is still Proposed, nothing bought yet, so there's still nothing for the closed-positions table. Skipped the optional daily UI-polish pass this run to keep scope on the data-side work above (it's not required on the weekly deep dive per `instructions.md`).
+
+**Tooling note (unchanged):** WebFetch remains EGRESS_BLOCKED for every pricing/tracker domain tested (api.pokemontcg.io, tcgplayer.com, sportscardinvestor.com, pokescope.app, alohacardshop.com) and for the card-show-calendar domains tested directly (hawaiicardshows.com, cutterscollection.com, alohacardshow.com). All research this run is WebSearch-snippet-sourced, same confidence tier as every run since 2026-09-14.
+
+**Files updated:** `context.md` (calendar confirmations/new dates, Aloha Card Shop resolution, per-print pricing technique note, egress status), `holdings-log.md` (new dated note, price corrections, 3 new rows), `public/data.json` (rebuilt — 3 new shows, 3 new buy-list entries, 2 major price corrections, cardId added where confident), `run-log.md` (this entry).
+
+---
+
 ## 2026-09-15 — Daily quick-check (scheduled, later same day)
 
 **Scope:** Scheduled daily quick-check, firing several hours after the out-of-band runs logged below (all also dated 2026-09-15). Standard lightweight scope per `instructions.md`: imminent events, price sanity-check, giveaway scan, holdings review, website interface pass.
