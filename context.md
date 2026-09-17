@@ -2,7 +2,7 @@
 
 This is a living document. Add to it whenever a run turns up a new shop, show series, or source — or finds that one of these is stale/dead.
 
-_Last researched: 2026-09-14 (weekly deep dive; same-day daily quick-check also run, see run-log.md)._
+_Last researched: 2026-09-17 (daily quick-check; see run-log.md for full history)._
 
 ## Card show calendar sources (check these, don't rely on memory)
 
@@ -40,7 +40,7 @@ Confirmed dates as of this run (verify again before acting — schedules move): 
 - **ToyLynx / Ideal808** — 650 Iwilei Rd, Honolulu (near Costco) — sealed, singles, Japanese imports, runs tournaments + biweekly trade nights
 - **TCG Tavern** — 903 Isenberg St, Honolulu — full Pokémon inventory, trade days (next Oct 26 2026)
 - **Space 62** — Ala Moana Center, 3rd floor near Buffalo Wild Wings — Pokémon selection + graded slabs
-- **Aloha Card Shop** — Pokémon sealed/singles/sports; also sells online (alohacardshop.com, eBay store "alohatcg"); ~1,847 Pokémon SKUs listed online as of the 2026-09-13 daily check, still no 30th Celebration/Anniversary set listings confirmed as of 2026-09-14 (direct site access blocked this run — see network note below; set launches 2026-09-16, so this needs a direct re-check right around/after launch). Currently lists a "Pokémon Day 2026 Collection" (stamped Pikachu foil promo + 30th-anniversary coin + 3 packs) — that's a National Pokémon Day tie-in, NOT the 30th Celebration set itself.
+- **Aloha Card Shop** — Pokémon sealed/singles/sports; also sells online (alohacardshop.com, eBay store "alohatcg"); ~1,847 Pokémon SKUs listed online as of the 2026-09-13 daily check. **UPDATE 2026-09-17: 30th Celebration listings are now confirmed live** (found via WebSearch, one day after the Sept 16 launch) — "Pokémon 30th Celebration Knock Out Collection" (1 foil Eevee promo + coin + 2 booster packs) and "Pokémon 30th Celebration Poster Collection" (3 foil promos — Articuno/Zapdos/Moltres + double-sided poster + 3 booster packs) both live as product pages on alohacardshop.com. Direct WebFetch to the site is still EGRESS_BLOCKED, so this is WebSearch-snippet-sourced, not a full stock/price check — resolves the "still no listings" flag open since 2026-09-13.
 - **808 Showcase** — Pokémon inventory, trade nights
 - **Nocturnal TCG & Collectibles** — Honolulu (shopnocturnaltcg.com)
 - **Final Form Hawaii** — finalformhawaii.com
@@ -62,6 +62,7 @@ Confirmed dates as of this run (verify again before acting — schedules move): 
 - **UPDATE (2026-09-14, second daily quick-check, ~4hrs after the first same-day check)**: the new live-settings endpoint (`https://flipdashboard.tcgflip.workers.dev/api/state`, added to `instructions.md` this same day) is also blocked by this environment's egress proxy (EGRESS_BLOCKED, confirmed via WebFetch and the proxy's own status check) — the restriction now confirmed to cover the dashboard's own Worker domain, not just third-party pricing/calendar sites. Fell back to the toggle values already committed in `data.json` (all three product types on) since live state couldn't be read. If this persists, Ryan's phone-tapped toggle changes won't reach these runs until it's fixed.
 - **UPDATE (2026-09-15 daily check)**: egress restriction persists — direct WebFetch to tcgplayer.com and api.pokemontcg.io both still return EGRESS_BLOCKED. WebSearch continues to work and remains the only usable research path.
 - **UPDATE (2026-09-15, later same-day daily quick-check)**: still blocked — added alohacardshop.com to the confirmed-blocked list this pass (direct WebFetch to `/collections/pokemon` returned EGRESS_BLOCKED). No change in the overall picture.
+- **UPDATE (2026-09-17 daily check)**: still blocked — direct WebFetch attempts this pass to pokescope.app, pricecharting.com, psacard.com, and ebay.com all returned EGRESS_BLOCKED. WebSearch remains the only usable research path, and its own summarization isn't fully reliable either — it flatly misstated the day of week for a confirmed event date this run (see run-log.md), and a search for Giratina VSTAR PSA 10 pricing surfaced a ~2x price contaminated by an unrelated, much pricier card sharing similar search terms (also see run-log.md and the buy-list correction it produced). Cross-checking multiple independent source snippets per figure, not just trusting one AI-summarized answer, remains essential.
 - PSA population report — for graded singles/slabs scarcity
 - Official Pokémon TCG release calendar + competitive season calendar — set rotations, Worlds, Regionals, anime tie-ins drive demand spikes, useful for timing buys/sells and for sourcing pull-rate data for sealed EV math
 

@@ -4,6 +4,29 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-17 — Daily quick-check
+
+**Scope:** Standard lightweight scope per `instructions.md` — imminent events, price sanity-check on current buy-list picks, giveaway scan, holdings review, website interface pass. First run since 2026-09-15 (no run fired 2026-09-16).
+
+**Checked:**
+- Aloha Card Show (Sept 19-20, Blaisdell) — reconfirmed via WebSearch, dates/hours/pricing unchanged.
+- 808 Showcase Trade Night (Sept 18, Pearlridge, 3rd Friday) — reconfirmed unchanged, but WebSearch's own summary incorrectly claimed Sept 18 2026 "falls on a Thursday" — verified directly it's a Friday (and the correct 3rd Friday of the month). Not acted on; flagging as a reminder that WebSearch's summarization layer can itself introduce errors, not just the sources it draws from.
+- **Aloha Card Shop 30th Celebration listings — now confirmed live**, one day after the Sept 16 launch (Knock Out Collection, Poster Collection). Resolves the flag open since 2026-09-13. See `context.md`.
+- New giveaways: none found.
+- Holdings: nothing to advise on — all 10 buy-list items still Proposed, none Holding.
+
+**Price sanity-checks turned up a real error:** Re-checking Giratina VSTAR PSA 10 (added 2026-09-15) found the $185 market price on the books was contaminated by search results for a different, far pricier card in the same set — Lost Origin's real chase alt art is Giratina V (not VSTAR) #186/196 (~$800+), while this pick is actually #201/196, a gold/rainbow secret rare, not an alt art as it was labeled. Multiple independent sources (PokeScope, PriceCharting, CardCodex, two listing sites) agree on real PSA-10 sold comps of $66.56-$94 (n=3) for the correct card. Corrected: market $185→$80, target $157→$68, net ROI ~10%→~6%; description fixed from "alt art" to "gold secret rare"; thesis reworded to honestly own the rarity-tier tension per the community-demand-signal rule instead of claiming alt-art demand it doesn't have. Full detail in `holdings-log.md`.
+
+Also flagged (not applied): a single PokeScope read on Pikachu VMAX PSA 10 this pass showed $179.68 — more than double the $52-88 sold-comp range the pick is priced on. One conflicting source isn't enough to act on; noted in `data.json`'s `source` field for the next check to resolve, same treatment the Rayquaza VMAX conflict got before it was eventually settled.
+
+**Website interface pass:** Buy-list tiles had no visual signal for picks flagged as thin/low-confidence in their source text (Radiant Charizard PSA 9, Mew VMAX PSA 10, and now Giratina VSTAR PSA 10) — Ryan would only see that by reading the small source-citation text on each tile. Added a `confidence` field (`data.json`) and a coral "Thin data" tile badge (`app.html`) that surfaces it at a glance instead.
+
+**Tooling note:** Direct WebFetch to pokescope.app, pricecharting.com, psacard.com, and ebay.com all still returned EGRESS_BLOCKED this run, consistent with every prior run — WebSearch remains the only usable path, cross-checked across multiple source snippets per figure (which is exactly what caught the Giratina VSTAR contamination above).
+
+**Files updated:** `context.md` (Aloha Card Shop update, egress note), `holdings-log.md` (dated note, Giratina VSTAR row corrected), `public/data.json` (`generated_at` bump, Giratina VSTAR repriced/relabeled, `confidence` field added to 3 slabs, Pikachu VMAX conflict noted), `public/app.html` ("Thin data" tile badge), `run-log.md` (this entry).
+
+---
+
 ## 2026-09-15 — Daily quick-check (scheduled, later same day)
 
 **Scope:** Scheduled daily quick-check, firing several hours after the out-of-band runs logged below (all also dated 2026-09-15). Standard lightweight scope per `instructions.md`: imminent events, price sanity-check, giveaway scan, holdings review, website interface pass.
