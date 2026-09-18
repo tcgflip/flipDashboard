@@ -4,6 +4,26 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-18 — Daily quick-check
+
+**Scope:** Standard lightweight scope per `instructions.md` — imminent events, price sanity-check on current buy-list picks, giveaway scan, holdings review, website interface pass.
+
+**Checked:**
+- 808 Showcase Trade Night (today, Pearlridge, 3rd Friday) and Aloha Card Show (Sept 19-20, Blaisdell, tomorrow) both reconfirmed via WebSearch, unchanged. WebSearch's own AI summary again misstated a day of week — claimed today "is a Thursday"; verified directly via the shell's `date` command that Sept 18 2026 is actually a Friday (the correct 3rd Friday). Third occurrence of this specific error type — flagging as a pattern in `context.md`, not a one-off.
+- New show sighting: "Aiea Basketball Cards & Collectibles Show Fundraiser" (Aiea, Oct 31) — same day as the already-tracked Urban Soccer Hawaii Card Show. Pokémon-relevance unconfirmed, noted in `context.md`, not added to the active calendar. Also noticed November dates surfacing for several tracked shows plus one new name ("Legends and Monsters Card Show," Nov 15) — flagged for the next weekly deep dive to extend the calendar.
+- New giveaways: none found.
+- Holdings: nothing to advise on — all 10 buy-list items still Proposed, none Holding.
+
+**Price sanity-check turned up a second real pricing error (after Giratina VSTAR on 2026-09-17):** Pikachu VMAX PSA 10's on-the-books price ($81 market / $69 target, sourced from a "$52-88 sold comp range") was itself wrong — that range sits below even the card's raw/ungraded price. Cross-checked three ways: TCGplayer-market aggregators put the raw card at ~$170-198; PSA's own auction-prices-realized database shows 5 real PSA-10 sales clustered $305-325 (Jan-Mar 2026); a PriceCharting PSA-10 offer independently shows $320.72. All three agree with each other, none support the old figure. Corrected: market $81→$310, target $69→$264, net ROI 10%→8% (kept conservative — no PSA-10 sale newer than March 2026 turned up despite searching, so `confidence: low` was added for staleness even though the comps themselves are a tight cluster). Full detail in `holdings-log.md`.
+
+**Website interface pass:** Found a small real gap — the Events tab's countdown text ("Tomorrow," "In N days," "Today") went blank once a multi-day show was already underway (e.g. checking the dashboard on day two of the Aloha Card Show would show no status at all, just the show's info with nothing indicating it's happening now). Added a "Happening now" state for that case in `app.html`.
+
+**Tooling note:** Direct WebFetch to pokescope.app, pricecharting.com, and psacard.com all still returned EGRESS_BLOCKED this run — WebSearch remains the only usable path. Both real pricing errors caught in the last two runs (Giratina VSTAR, Pikachu VMAX) were found by specifically searching out PSA's own auction-prices-realized page rather than stopping at the first aggregator figure — worth treating that as a standard extra step whenever a price looks off relative to a card's raw price or rarity tier.
+
+**Files updated:** `context.md` (new show sightings, egress/WebSearch-reliability notes), `holdings-log.md` (dated note, Pikachu VMAX row corrected), `public/data.json` (`generated_at` bump, Pikachu VMAX slab repriced/re-flagged), `public/app.html` ("Happening now" countdown state), `run-log.md` (this entry).
+
+---
+
 ## 2026-09-17 — Daily quick-check
 
 **Scope:** Standard lightweight scope per `instructions.md` — imminent events, price sanity-check on current buy-list picks, giveaway scan, holdings review, website interface pass. First run since 2026-09-15 (no run fired 2026-09-16).

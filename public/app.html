@@ -512,7 +512,7 @@ function render(data) {
   document.getElementById('shows-list').innerHTML = shows.length ? shows.map(s => {
     const d = new Date(s.start_date + 'T00:00:00');
     const daysUntil = Math.ceil((d - new Date()) / 86400000);
-    const countdown = daysUntil > 1 ? `In ${daysUntil} days` : daysUntil === 1 ? 'Tomorrow' : daysUntil === 0 ? 'Today' : '';
+    const countdown = daysUntil > 1 ? `In ${daysUntil} days` : daysUntil === 1 ? 'Tomorrow' : daysUntil === 0 ? 'Today' : 'Happening now';
     const mapsUrl = 'https://maps.apple.com/?q=' + encodeURIComponent(s.venue);
     return `<div class="row">
       <div class="date-badge"><span class="day">${d.getDate()}</span><span class="month">${MONTHS[d.getMonth()]}</span></div>
