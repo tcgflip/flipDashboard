@@ -107,16 +107,25 @@ async function handleLookupPrice(request, env) {
   if (!body || !body.name) return json({ error: 'Bad request' }, 400);
   const headers = env.POKEMONTCG_API_KEY ? { 'X-Api-Key': env.POKEMONTCG_API_KEY } : {};
 
-  // Search from most specific to least specific, so the exact printing
-  // (not just any card sharing the name) is what gets matched on first try.
-  const nameQ = `name:"${body.name}"`;
+  // pokemontcg.io stores GX/EX/V/VMAX/VSTAR cards with a hyphen before the
+  // suffix (e.g. "Mewtwo & Mew-GX"), but a name read off a photo naturally
+  // comes back with a space ("Mewtwo & Mew GX") — try both.
+  const nameHyphen = body.name.replace(/\s+(GX|EX|VMAX|VSTAR|V)\b/gi, '-$1');
+  const names = nameHyphen !== body.name ? [body.name, nameHyphen] : [body.name];
   const setQ = body.set ? ` set.name:"${body.set}"` : '';
   const numQ = body.number ? ` number:"${body.number}"` : '';
+
   let list = [];
-  if (setQ && numQ) list = await fetchCards(nameQ + setQ + numQ, headers);
-  if (!list.length && setQ) list = await fetchCards(nameQ + setQ, headers);
-  if (!list.length && numQ) list = await fetchCards(nameQ + numQ, headers);
-  if (!list.length) list = await fetchCards(nameQ, headers);
+  // Number + set alone is the most reliable match — it doesn't depend on
+  // getting the name's exact formatting (hyphen, punctuation, etc.) right.
+  if (!list.length && setQ && numQ) list = await fetchCards(`set.name:"${body.set}"${numQ}`, headers);
+  for (const n of names) {
+    const nameQ = `name:"${n}"`;
+    if (!list.length && setQ && numQ) list = await fetchCards(nameQ + setQ + numQ, headers);
+    if (!list.length && setQ) list = await fetchCards(nameQ + setQ, headers);
+    if (!list.length && numQ) list = await fetchCards(nameQ + numQ, headers);
+    if (!list.length) list = await fetchCards(nameQ, headers);
+  }
   if (!list.length) {
     const looseName = body.name.replace(/\s*\b(GX|EX|V|VMAX|VSTAR|TAG TEAM)\b\s*/gi, ' ').trim();
     if (looseName && looseName !== body.name) list = await fetchCards(`name:"${looseName}*"`, headers);
