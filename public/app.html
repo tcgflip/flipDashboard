@@ -336,7 +336,9 @@ function rowInnerHTML(card) {
     ? `<span class="market">Market <strong>${fmt(card.marketPrice)}</strong>${card.priceLabel ? ' <span style="opacity:.6">(' + card.priceLabel + ')</span>' : ''}</span>`
     : card.status === 'price-failed'
       ? `<span class="no-price">Couldn't fetch price</span>`
-      : `<span class="market">Looking up…</span>`;
+      : card.status === 'priced'
+        ? `<span class="no-price">No price data</span>`
+        : `<span class="market">Looking up…</span>`;
 
   const { chip } = verdictFor(card);
 
