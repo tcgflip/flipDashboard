@@ -111,7 +111,14 @@ async function handleLookupPrice(request, env) {
   if (body.set) q += ` set.name:"${body.set}"`;
   let list = await fetchCards(q, headers);
   if (!list.length) list = await fetchCards(`name:"${body.name}"`, headers);
-  if (!list.length) return json({ marketPrice: null, priceLabel: null, tcgUrl: null });
+  if (!list.length) {
+    const looseName = body.name.replace(/\s*\b(GX|EX|V|VMAX|VSTAR|TAG TEAM)\b\s*/gi, ' ').trim();
+    if (looseName && looseName !== body.name) list = await fetchCards(`name:"${looseName}*"`, headers);
+  }
+  if (!list.length) {
+    const searchUrl = `https://www.tcgplayer.com/search/pokemon/product?q=${encodeURIComponent(body.name)}`;
+    return json({ marketPrice: null, priceLabel: null, tcgUrl: searchUrl });
+  }
 
   let match = list[0];
   if (body.number) {
@@ -125,11 +132,18 @@ async function handleLookupPrice(request, env) {
   const variantOrder = body.variant && prices[body.variant]
     ? [body.variant]
     : ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', 'unlimitedHolofoil'];
-  let chosenVariant = null, chosenPrice = null;
-  for (const v of variantOrder) {
-    if (prices[v] && typeof prices[v].market === 'number') { chosenVariant = v; chosenPrice = prices[v].market; break; }
+  let chosenVariant = null, chosenPrice = null, isEstimate = false;
+  for (const tier of ['market', 'mid', 'low']) {
+    for (const v of variantOrder) {
+      if (prices[v] && typeof prices[v][tier] === 'number') {
+        chosenVariant = v; chosenPrice = prices[v][tier]; isEstimate = tier !== 'market';
+        break;
+      }
+    }
+    if (chosenPrice != null) break;
   }
-  return json({ marketPrice: chosenPrice, priceLabel: chosenVariant, tcgUrl: (match.tcgplayer && match.tcgplayer.url) || null });
+  const priceLabel = chosenVariant ? (chosenVariant + (isEstimate ? ' est.' : '')) : null;
+  return json({ marketPrice: chosenPrice, priceLabel, tcgUrl: (match.tcgplayer && match.tcgplayer.url) || null });
 }
 
 async function fetchCards(q, headers) {
