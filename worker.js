@@ -107,13 +107,18 @@ async function handleLookupPrice(request, env) {
   if (!body || !body.name) return json({ error: 'Bad request' }, 400);
   const headers = env.POKEMONTCG_API_KEY ? { 'X-Api-Key': env.POKEMONTCG_API_KEY } : {};
 
+  // A card read off a photo often carries the full printed fraction, e.g.
+  // "201/165" — pokemontcg.io only ever stores the local number ("201"),
+  // never the set total, so that has to be stripped before it's queryable.
+  const numOnly = body.number ? String(body.number).split('/')[0].trim().replace(/^0+(?=\d)/, '') : null;
+
   // pokemontcg.io stores GX/EX/V/VMAX/VSTAR cards with a hyphen before the
   // suffix (e.g. "Mewtwo & Mew-GX"), but a name read off a photo naturally
   // comes back with a space ("Mewtwo & Mew GX") — try both.
   const nameHyphen = body.name.replace(/\s+(GX|EX|VMAX|VSTAR|V)\b/gi, '-$1');
   const names = nameHyphen !== body.name ? [body.name, nameHyphen] : [body.name];
   const setQ = body.set ? ` set.name:"${body.set}"` : '';
-  const numQ = body.number ? ` number:"${body.number}"` : '';
+  const numQ = numOnly ? ` number:"${numOnly}"` : '';
 
   let list = [];
   // Number + set alone is the most reliable match — it doesn't depend on
@@ -131,14 +136,14 @@ async function handleLookupPrice(request, env) {
     if (looseName && looseName !== body.name) list = await fetchCards(`name:"${looseName}*"`, headers);
   }
   if (!list.length) {
-    const searchText = [body.name, body.set, body.number].filter(Boolean).join(' ');
+    const searchText = [body.name, body.set, numOnly].filter(Boolean).join(' ');
     const searchUrl = `https://www.tcgplayer.com/search/pokemon/product?q=${encodeURIComponent(searchText)}`;
     return json({ marketPrice: null, priceLabel: null, tcgUrl: searchUrl });
   }
 
   let match = list[0];
-  if (body.number) {
-    const numMatch = list.find(c => c.number === body.number);
+  if (numOnly) {
+    const numMatch = list.find(c => c.number === numOnly || c.number.replace(/^0+(?=\d)/, '') === numOnly);
     if (numMatch) match = numMatch;
   }
 
