@@ -26,6 +26,67 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-18 — Daily quick-check
+
+**Scope:** Standard lightweight scope per `instructions.md` — imminent events, price sanity-check on current buy-list picks, giveaway scan, holdings review, website interface pass.
+
+**Checked:**
+- 808 Showcase Trade Night (today, Pearlridge, 3rd Friday) and Aloha Card Show (Sept 19-20, Blaisdell, tomorrow) both reconfirmed via WebSearch, unchanged. WebSearch's own AI summary again misstated a day of week — claimed today "is a Thursday"; verified directly via the shell's `date` command that Sept 18 2026 is actually a Friday (the correct 3rd Friday). Third occurrence of this specific error type — flagging as a pattern in `context.md`, not a one-off.
+- New show sighting: "Aiea Basketball Cards & Collectibles Show Fundraiser" (Aiea, Oct 31) — same day as the already-tracked Urban Soccer Hawaii Card Show. Pokémon-relevance unconfirmed, noted in `context.md`, not added to the active calendar. Also noticed November dates surfacing for several tracked shows plus one new name ("Legends and Monsters Card Show," Nov 15) — flagged for the next weekly deep dive to extend the calendar.
+- New giveaways: none found.
+- Holdings: nothing to advise on — all 10 buy-list items still Proposed, none Holding.
+
+**Price sanity-check turned up a second real pricing error (after Giratina VSTAR on 2026-09-17):** Pikachu VMAX PSA 10's on-the-books price ($81 market / $69 target, sourced from a "$52-88 sold comp range") was itself wrong — that range sits below even the card's raw/ungraded price. Cross-checked three ways: TCGplayer-market aggregators put the raw card at ~$170-198; PSA's own auction-prices-realized database shows 5 real PSA-10 sales clustered $305-325 (Jan-Mar 2026); a PriceCharting PSA-10 offer independently shows $320.72. All three agree with each other, none support the old figure. Corrected: market $81→$310, target $69→$264, net ROI 10%→8% (kept conservative — no PSA-10 sale newer than March 2026 turned up despite searching, so `confidence: low` was added for staleness even though the comps themselves are a tight cluster). Full detail in `holdings-log.md`.
+
+**Website interface pass:** Found a small real gap — the Events tab's countdown text ("Tomorrow," "In N days," "Today") went blank once a multi-day show was already underway (e.g. checking the dashboard on day two of the Aloha Card Show would show no status at all, just the show's info with nothing indicating it's happening now). Added a "Happening now" state for that case in `app.html`.
+
+**Tooling note:** Direct WebFetch to pokescope.app, pricecharting.com, and psacard.com all still returned EGRESS_BLOCKED this run — WebSearch remains the only usable path. Both real pricing errors caught in the last two runs (Giratina VSTAR, Pikachu VMAX) were found by specifically searching out PSA's own auction-prices-realized page rather than stopping at the first aggregator figure — worth treating that as a standard extra step whenever a price looks off relative to a card's raw price or rarity tier.
+
+**Files updated:** `context.md` (new show sightings, egress/WebSearch-reliability notes), `holdings-log.md` (dated note, Pikachu VMAX row corrected), `public/data.json` (`generated_at` bump, Pikachu VMAX slab repriced/re-flagged), `public/app.html` ("Happening now" countdown state), `run-log.md` (this entry).
+
+---
+
+## 2026-09-17 — Daily quick-check
+
+**Scope:** Standard lightweight scope per `instructions.md` — imminent events, price sanity-check on current buy-list picks, giveaway scan, holdings review, website interface pass. First run since 2026-09-15 (no run fired 2026-09-16).
+
+**Checked:**
+- Aloha Card Show (Sept 19-20, Blaisdell) — reconfirmed via WebSearch, dates/hours/pricing unchanged.
+- 808 Showcase Trade Night (Sept 18, Pearlridge, 3rd Friday) — reconfirmed unchanged, but WebSearch's own summary incorrectly claimed Sept 18 2026 "falls on a Thursday" — verified directly it's a Friday (and the correct 3rd Friday of the month). Not acted on; flagging as a reminder that WebSearch's summarization layer can itself introduce errors, not just the sources it draws from.
+- **Aloha Card Shop 30th Celebration listings — now confirmed live**, one day after the Sept 16 launch (Knock Out Collection, Poster Collection). Resolves the flag open since 2026-09-13. See `context.md`.
+- New giveaways: none found.
+- Holdings: nothing to advise on — all 10 buy-list items still Proposed, none Holding.
+
+**Price sanity-checks turned up a real error:** Re-checking Giratina VSTAR PSA 10 (added 2026-09-15) found the $185 market price on the books was contaminated by search results for a different, far pricier card in the same set — Lost Origin's real chase alt art is Giratina V (not VSTAR) #186/196 (~$800+), while this pick is actually #201/196, a gold/rainbow secret rare, not an alt art as it was labeled. Multiple independent sources (PokeScope, PriceCharting, CardCodex, two listing sites) agree on real PSA-10 sold comps of $66.56-$94 (n=3) for the correct card. Corrected: market $185→$80, target $157→$68, net ROI ~10%→~6%; description fixed from "alt art" to "gold secret rare"; thesis reworded to honestly own the rarity-tier tension per the community-demand-signal rule instead of claiming alt-art demand it doesn't have. Full detail in `holdings-log.md`.
+
+Also flagged (not applied): a single PokeScope read on Pikachu VMAX PSA 10 this pass showed $179.68 — more than double the $52-88 sold-comp range the pick is priced on. One conflicting source isn't enough to act on; noted in `data.json`'s `source` field for the next check to resolve, same treatment the Rayquaza VMAX conflict got before it was eventually settled.
+
+**Website interface pass:** Buy-list tiles had no visual signal for picks flagged as thin/low-confidence in their source text (Radiant Charizard PSA 9, Mew VMAX PSA 10, and now Giratina VSTAR PSA 10) — Ryan would only see that by reading the small source-citation text on each tile. Added a `confidence` field (`data.json`) and a coral "Thin data" tile badge (`app.html`) that surfaces it at a glance instead.
+
+**Tooling note:** Direct WebFetch to pokescope.app, pricecharting.com, psacard.com, and ebay.com all still returned EGRESS_BLOCKED this run, consistent with every prior run — WebSearch remains the only usable path, cross-checked across multiple source snippets per figure (which is exactly what caught the Giratina VSTAR contamination above).
+
+**Files updated:** `context.md` (Aloha Card Shop update, egress note), `holdings-log.md` (dated note, Giratina VSTAR row corrected), `public/data.json` (`generated_at` bump, Giratina VSTAR repriced/relabeled, `confidence` field added to 3 slabs, Pikachu VMAX conflict noted), `public/app.html` ("Thin data" tile badge), `run-log.md` (this entry).
+
+---
+
+## 2026-09-15 — Daily quick-check (scheduled, later same day)
+
+**Scope:** Scheduled daily quick-check, firing several hours after the out-of-band runs logged below (all also dated 2026-09-15). Standard lightweight scope per `instructions.md`: imminent events, price sanity-check, giveaway scan, holdings review, website interface pass.
+
+**Checked:**
+- Aloha Card Show (Sept 19-20, Blaisdell) — reconfirmed via WebSearch, dates/hours/admission unchanged.
+- Aloha Card Shop 30th Celebration listings — still unconfirmed, now 1 day out from the Sept 16 launch. Direct WebFetch to alohacardshop.com returned EGRESS_BLOCKED (newly confirmed blocked domain, added to `context.md`) — still needs a firsthand post-launch recheck, can't be verified from this environment.
+- Rayquaza VMAX price conflict ($15.39 vs. $10.31) — re-searched, same unresolved spread turned up, no new data either way. Flag stands, no change made.
+- Egress status — re-tested api.pokemontcg.io, still EGRESS_BLOCKED, consistent with every prior run.
+- New giveaways: none found.
+- Holdings: nothing to advise on — all items still Proposed.
+
+**Website interface pass:** Found a real (latent) bug — the Events tab had no mechanism to ever stop showing a card show once it had ended; a past multi-day show would linger in the list indefinitely with just a blank countdown instead of disappearing. Fixed: added an `end_date` field to every show entry in `data.json`, and a client-side filter in `app.html` that drops a show once its `end_date` has passed (falling back to `start_date` for single-day shows), plus an empty-state message for the (currently hypothetical) case where the calendar is clear.
+
+**Files updated:** `context.md` (egress note — alohacardshop.com confirmed blocked), `holdings-log.md` (this check's note), `public/data.json` (`end_date` added to all 10 shows), `public/app.html` (past-show filtering + empty state), `run-log.md` (this entry).
+
+---
+
 ## 2026-09-15 — Thesis fact-check + bullet-format conversion (out-of-band, Ryan-requested)
 
 **Scope:** Ryan asked to double-check the buy list's thesis text accuracy and reformat it as short "top reasons" bullets instead of prose.
