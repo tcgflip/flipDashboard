@@ -127,44 +127,46 @@ async function handleLookupPrice(request, env) {
     if (!list.length && setQ && numQ) list = await fetchScrydexCards(nameQ + setQ + numQ, headers);
     if (!list.length && setQ) list = await fetchScrydexCards(nameQ + setQ, headers);
     if (!list.length && numQ) list = await fetchScrydexCards(nameQ + numQ, headers);
-    if (!list.length) list = await fetchScrydexCards(nameQ, headers);
+    if (!list.length) list = await fetchScrydexCards(nameQ, headers, 10);
     if (!list.length) {
       const searchText = [body.name, body.set, numOnly].filter(Boolean).join(' ');
       const searchUrl = `https://www.tcgplayer.com/search/pokemon/product?q=${encodeURIComponent(searchText)}`;
       return json({ marketPrice: null, priceLabel: null, tcgUrl: searchUrl });
     }
 
-    let match = list[0];
-    if (numOnly) {
-      const numMatch = list.find(c => c.number === numOnly);
-      if (numMatch) match = numMatch;
-    }
+    // If a card number was read, prefer candidates that actually match it —
+    // but without one (common when the number wasn't legible in the photo),
+    // a plain name search can return several unrelated printings, and the
+    // first one isn't necessarily the one with usable pricing.
+    const numMatches = numOnly ? list.filter(c => c.number === numOnly) : [];
+    const candidates = numMatches.length ? numMatches : list;
 
     // A card can have several print variants (holofoil, reverse holofoil,
     // etc.), and not all of them carry raw (ungraded) pricing — some only
-    // have graded/population data. Collect raw prices across every variant
-    // instead of committing to the first variant that has *any* price data,
-    // which could be graded-only and dead-end the whole lookup.
-    const variants = match.variants || [];
-    const rawByVariant = variants
-      .map(v => ({
-        name: v.name,
-        raw: (Array.isArray(v.prices) ? v.prices : []).filter(p => p.type === 'raw' && typeof p.market === 'number')
-      }))
-      .filter(v => v.raw.length);
+    // have graded/population data. Check every candidate printing (and
+    // every variant on each) instead of committing to the first one, which
+    // could turn out to have no raw pricing at all while another candidate
+    // further down the list does.
+    const hint = body.variant ? String(body.variant).toLowerCase() : null;
+    let picked = null;
+    for (const candidate of candidates) {
+      const variants = candidate.variants || [];
+      const rawByVariant = variants
+        .map(v => ({
+          name: v.name,
+          raw: (Array.isArray(v.prices) ? v.prices : []).filter(p => p.type === 'raw' && typeof p.market === 'number')
+        }))
+        .filter(v => v.raw.length);
+      if (!rawByVariant.length) continue;
+      picked = (hint && rawByVariant.find(v => v.name && v.name.toLowerCase().includes(hint))) || rawByVariant[0];
+      break;
+    }
 
-    if (!rawByVariant.length) {
+    if (!picked) {
       const searchText = [body.name, body.set, numOnly].filter(Boolean).join(' ');
       const searchUrl = `https://www.tcgplayer.com/search/pokemon/product?q=${encodeURIComponent(searchText)}`;
       return json({ marketPrice: null, priceLabel: null, tcgUrl: searchUrl });
     }
-
-    // The AI's guessed variant ("holofoil", "reverseHolofoil", "normal") is a
-    // rough hint, not an exact match against Scrydex's more granular variant
-    // names (e.g. "unlimitedHolofoil") — prefer a substring hit that actually
-    // has raw pricing, otherwise fall back to whichever variant does.
-    const hint = body.variant ? String(body.variant).toLowerCase() : null;
-    const picked = (hint && rawByVariant.find(v => v.name && v.name.toLowerCase().includes(hint))) || rawByVariant[0];
 
     const conditionOrder = ['NM', 'LP', 'MP', 'HP', 'DM'];
     let chosen = null;
@@ -181,8 +183,8 @@ async function handleLookupPrice(request, env) {
   }
 }
 
-async function fetchScrydexCards(q, headers) {
-  const url = `https://api.scrydex.com/pokemon/v1/en/cards?include=prices&page_size=5&q=${encodeURIComponent(q)}`;
+async function fetchScrydexCards(q, headers, pageSize = 5) {
+  const url = `https://api.scrydex.com/pokemon/v1/en/cards?include=prices&page_size=${pageSize}&q=${encodeURIComponent(q)}`;
   const res = await fetch(url, { headers });
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
