@@ -138,29 +138,41 @@ async function handleLookupPrice(request, env) {
     if (numMatch) match = numMatch;
   }
 
+  // A card can have several print variants (holofoil, reverse holofoil,
+  // etc.), and not all of them carry raw (ungraded) pricing — some only
+  // have graded/population data. Collect raw prices across every variant
+  // instead of committing to the first variant that has *any* price data,
+  // which could be graded-only and dead-end the whole lookup.
   const variants = match.variants || [];
+  const rawByVariant = variants
+    .map(v => ({
+      name: v.name,
+      raw: (Array.isArray(v.prices) ? v.prices : []).filter(p => p.type === 'raw' && typeof p.market === 'number')
+    }))
+    .filter(v => v.raw.length);
+
+  if (!rawByVariant.length) {
+    const searchText = [body.name, body.set, numOnly].filter(Boolean).join(' ');
+    const searchUrl = `https://www.tcgplayer.com/search/pokemon/product?q=${encodeURIComponent(searchText)}`;
+    return json({ marketPrice: null, priceLabel: null, tcgUrl: searchUrl });
+  }
+
   // The AI's guessed variant ("holofoil", "reverseHolofoil", "normal") is a
   // rough hint, not an exact match against Scrydex's more granular variant
-  // names (e.g. "unlimitedHolofoil") — prefer a substring hit, otherwise
-  // just take whichever variant actually has priced data.
-  let variant = body.variant
-    ? variants.find(v => v.name && v.name.toLowerCase().includes(String(body.variant).toLowerCase()))
-    : null;
-  if (!variant) variant = variants.find(v => Array.isArray(v.prices) && v.prices.length);
-  if (!variant) variant = variants[0];
+  // names (e.g. "unlimitedHolofoil") — prefer a substring hit that actually
+  // has raw pricing, otherwise fall back to whichever variant does.
+  const hint = body.variant ? String(body.variant).toLowerCase() : null;
+  const picked = (hint && rawByVariant.find(v => v.name && v.name.toLowerCase().includes(hint))) || rawByVariant[0];
 
-  const prices = (variant && variant.prices) || [];
-  const raw = prices.filter(p => p.type === 'raw');
   const conditionOrder = ['NM', 'LP', 'MP', 'HP', 'DM'];
   let chosen = null;
   for (const cond of conditionOrder) {
-    chosen = raw.find(p => p.condition === cond && typeof p.market === 'number');
+    chosen = picked.raw.find(p => p.condition === cond);
     if (chosen) break;
   }
-  if (!chosen) chosen = raw.find(p => typeof p.market === 'number');
-  if (!chosen) return json({ marketPrice: null, priceLabel: null, tcgUrl: null });
+  if (!chosen) chosen = picked.raw[0];
 
-  const priceLabel = [variant.name, chosen.condition].filter(Boolean).join(' · ');
+  const priceLabel = [picked.name, chosen.condition].filter(Boolean).join(' · ');
   return json({ marketPrice: chosen.market, priceLabel, tcgUrl: null });
 }
 
