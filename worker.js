@@ -106,7 +106,8 @@ async function handleLookupPrice(request, env) {
   const body = await request.json().catch(() => null);
   if (!body || !body.name) return json({ error: 'Bad request' }, 400);
   if (!env.SCRYDEX_API_KEY || !env.Scrydex_Team_ID) {
-    return json({ error: 'Price lookup is not configured yet (missing Scrydex credentials).' }, 500);
+    const missing = [!env.SCRYDEX_API_KEY && 'SCRYDEX_API_KEY', !env.Scrydex_Team_ID && 'Scrydex_Team_ID'].filter(Boolean).join(', ');
+    return json({ error: `Price lookup is not configured yet (missing ${missing}).` }, 500);
   }
   const headers = { 'X-Api-Key': env.SCRYDEX_API_KEY, 'X-Team-ID': env.Scrydex_Team_ID };
 
