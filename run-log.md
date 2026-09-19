@@ -4,6 +4,18 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-19 — Daily quick-check (skipped — project paused)
+
+**Scope:** Scheduled daily quick-check fired as usual, but `instructions.md`'s paused notice (added earlier today in the Binder Scan pivot, see the entry directly below) says a scheduled run hitting this file should stop and do nothing rather than research/rebuild against a buy-list feature `public/app.html` no longer serves.
+
+**Action taken:** None. Did not research shows/prices/giveaways, did not touch `context.md`, `holdings-log.md`, or `public/data.json` — left as dormant reference per the pause notice. This entry is the only change.
+
+**Still open:** The "Flippy Ledger - Daily Check"/"Flippy Ledger - Weekly Check" triggers are still live — this session can't disable a trigger it didn't create (same limitation noted in the pivot entry below). Ryan still needs to disable them himself if he doesn't want further no-op runs like this one.
+
+**Files updated:** `run-log.md` (this entry only).
+
+---
+
 ## 2026-09-19 — Project pivot: Binder Scan replaces the research buy list (out-of-band, Ryan-requested)
 
 **Scope:** Ryan wants to restart the app around a new core feature — a bulk binder-photo scanner (photograph a binder page, identify every card via Claude vision, pull pokemontcg.io market prices, enter an asking price, get an instant buy/pass margin verdict) — rather than the nightly research-driven buy list this whole project was built around. He shared a complete working reference implementation (client-side, own-API-key, ephemeral results) as the starting point.
