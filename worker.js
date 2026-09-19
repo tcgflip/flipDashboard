@@ -100,41 +100,32 @@ async function handleIdentify(request, env) {
   }
 }
 
-// ---- Binder Scan: price lookup (pokemontcg.io) ----
+// ---- Binder Scan: price lookup (Scrydex) ----
 
 async function handleLookupPrice(request, env) {
   const body = await request.json().catch(() => null);
   if (!body || !body.name) return json({ error: 'Bad request' }, 400);
-  const headers = env.POKEMONTCG_API_KEY ? { 'X-Api-Key': env.POKEMONTCG_API_KEY } : {};
+  if (!env.SCRYDEX_API_KEY || !env.Scrydex_Team_ID) {
+    return json({ error: 'Price lookup is not configured yet (missing Scrydex credentials).' }, 500);
+  }
+  const headers = { 'X-Api-Key': env.SCRYDEX_API_KEY, 'X-Team-ID': env.Scrydex_Team_ID };
 
   // A card read off a photo often carries the full printed fraction, e.g.
-  // "201/165" — pokemontcg.io only ever stores the local number ("201"),
-  // never the set total, so that has to be stripped before it's queryable.
+  // "201/165" — Scrydex's `number` field is only ever the local number
+  // ("201"), never the set total, so that has to be stripped first.
   const numOnly = body.number ? String(body.number).split('/')[0].trim().replace(/^0+(?=\d)/, '') : null;
-
-  // pokemontcg.io stores GX/EX/V/VMAX/VSTAR cards with a hyphen before the
-  // suffix (e.g. "Mewtwo & Mew-GX"), but a name read off a photo naturally
-  // comes back with a space ("Mewtwo & Mew GX") — try both.
-  const nameHyphen = body.name.replace(/\s+(GX|EX|VMAX|VSTAR|V)\b/gi, '-$1');
-  const names = nameHyphen !== body.name ? [body.name, nameHyphen] : [body.name];
-  const setQ = body.set ? ` set.name:"${body.set}"` : '';
+  const setQ = body.set ? ` expansion.name:"${body.set}"` : '';
   const numQ = numOnly ? ` number:"${numOnly}"` : '';
+  const nameQ = `name:"${body.name}"`;
 
   let list = [];
   // Number + set alone is the most reliable match — it doesn't depend on
-  // getting the name's exact formatting (hyphen, punctuation, etc.) right.
-  if (!list.length && setQ && numQ) list = await fetchCards(`set.name:"${body.set}"${numQ}`, headers);
-  for (const n of names) {
-    const nameQ = `name:"${n}"`;
-    if (!list.length && setQ && numQ) list = await fetchCards(nameQ + setQ + numQ, headers);
-    if (!list.length && setQ) list = await fetchCards(nameQ + setQ, headers);
-    if (!list.length && numQ) list = await fetchCards(nameQ + numQ, headers);
-    if (!list.length) list = await fetchCards(nameQ, headers);
-  }
-  if (!list.length) {
-    const looseName = body.name.replace(/\s*\b(GX|EX|V|VMAX|VSTAR|TAG TEAM)\b\s*/gi, ' ').trim();
-    if (looseName && looseName !== body.name) list = await fetchCards(`name:"${looseName}*"`, headers);
-  }
+  // getting the card's name text exactly right at all.
+  if (!list.length && setQ && numQ) list = await fetchScrydexCards(`number:"${numOnly}"${setQ}`, headers);
+  if (!list.length && setQ && numQ) list = await fetchScrydexCards(nameQ + setQ + numQ, headers);
+  if (!list.length && setQ) list = await fetchScrydexCards(nameQ + setQ, headers);
+  if (!list.length && numQ) list = await fetchScrydexCards(nameQ + numQ, headers);
+  if (!list.length) list = await fetchScrydexCards(nameQ, headers);
   if (!list.length) {
     const searchText = [body.name, body.set, numOnly].filter(Boolean).join(' ');
     const searchUrl = `https://www.tcgplayer.com/search/pokemon/product?q=${encodeURIComponent(searchText)}`;
@@ -143,32 +134,38 @@ async function handleLookupPrice(request, env) {
 
   let match = list[0];
   if (numOnly) {
-    const numMatch = list.find(c => c.number === numOnly || c.number.replace(/^0+(?=\d)/, '') === numOnly);
+    const numMatch = list.find(c => c.number === numOnly);
     if (numMatch) match = numMatch;
   }
 
-  const prices = match.tcgplayer && match.tcgplayer.prices;
-  if (!prices) return json({ marketPrice: null, priceLabel: null, tcgUrl: (match.tcgplayer && match.tcgplayer.url) || null });
+  const variants = match.variants || [];
+  // The AI's guessed variant ("holofoil", "reverseHolofoil", "normal") is a
+  // rough hint, not an exact match against Scrydex's more granular variant
+  // names (e.g. "unlimitedHolofoil") — prefer a substring hit, otherwise
+  // just take whichever variant actually has priced data.
+  let variant = body.variant
+    ? variants.find(v => v.name && v.name.toLowerCase().includes(String(body.variant).toLowerCase()))
+    : null;
+  if (!variant) variant = variants.find(v => Array.isArray(v.prices) && v.prices.length);
+  if (!variant) variant = variants[0];
 
-  const variantOrder = body.variant && prices[body.variant]
-    ? [body.variant]
-    : ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', 'unlimitedHolofoil'];
-  let chosenVariant = null, chosenPrice = null, isEstimate = false;
-  for (const tier of ['market', 'mid', 'low']) {
-    for (const v of variantOrder) {
-      if (prices[v] && typeof prices[v][tier] === 'number') {
-        chosenVariant = v; chosenPrice = prices[v][tier]; isEstimate = tier !== 'market';
-        break;
-      }
-    }
-    if (chosenPrice != null) break;
+  const prices = (variant && variant.prices) || [];
+  const raw = prices.filter(p => p.type === 'raw');
+  const conditionOrder = ['NM', 'LP', 'MP', 'HP', 'DM'];
+  let chosen = null;
+  for (const cond of conditionOrder) {
+    chosen = raw.find(p => p.condition === cond && typeof p.market === 'number');
+    if (chosen) break;
   }
-  const priceLabel = chosenVariant ? (chosenVariant + (isEstimate ? ' est.' : '')) : null;
-  return json({ marketPrice: chosenPrice, priceLabel, tcgUrl: (match.tcgplayer && match.tcgplayer.url) || null });
+  if (!chosen) chosen = raw.find(p => typeof p.market === 'number');
+  if (!chosen) return json({ marketPrice: null, priceLabel: null, tcgUrl: null });
+
+  const priceLabel = [variant.name, chosen.condition].filter(Boolean).join(' · ');
+  return json({ marketPrice: chosen.market, priceLabel, tcgUrl: null });
 }
 
-async function fetchCards(q, headers) {
-  const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=5`;
+async function fetchScrydexCards(q, headers) {
+  const url = `https://api.scrydex.com/pokemon/v1/en/cards?include=prices&page_size=5&q=${encodeURIComponent(q)}`;
   const res = await fetch(url, { headers });
   if (!res.ok) return [];
   const data = await res.json().catch(() => null);
