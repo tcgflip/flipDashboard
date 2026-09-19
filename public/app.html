@@ -9,21 +9,24 @@
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='36' fill='%230B0E14'/%3E%3Ctext x='90' y='118' font-family='Georgia,serif' font-weight='700' font-size='80' fill='%23D9A63E' text-anchor='middle'%3EPF%3C/text%3E%3C/svg%3E">
 <title>Poke Flips</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --ink:#0B0E14; --panel:#141926; --panel-2:#1B2233;
     --line:rgba(243,239,230,0.10); --line-strong:rgba(243,239,230,0.20);
     --gold:#D9A63E; --coral:#FF6452; --gain:#3DDC84;
+    --gain-bg:rgba(61,220,132,0.12); --gain-line:rgba(61,220,132,0.35);
+    --coral-bg:rgba(255,100,82,0.12); --coral-line:rgba(255,100,82,0.35);
+    --gold-bg:rgba(217,166,62,0.14); --gold-line:rgba(217,166,62,0.4);
     --text:#F3EFE4; --text-dim:#9AA0AE; --text-faint:#5B6270;
   }
   *{box-sizing:border-box;}
   body{
     margin:0; background:var(--ink); color:var(--text);
     font-family:'Space Grotesk',sans-serif; line-height:1.45;
-    padding-bottom:calc(72px + env(safe-area-inset-bottom));
+    padding-bottom:calc(28px + env(safe-area-inset-bottom));
   }
-  h1,h2,.brand{font-family:'Fraunces',serif;}
+  h1,.brand{font-family:'Fraunces',serif;}
   .num,.tabular{font-variant-numeric:tabular-nums;}
 
   header{
@@ -35,285 +38,159 @@
     display:flex; align-items:baseline; gap:0.14em;
   }
   .brand .flip{ display:inline-block; color:var(--gold); transform:rotateX(180deg); }
-  #updated{margin:6px 0 0; color:var(--text-faint); font-size:12.5px; font-family:'IBM Plex Mono',monospace;}
   .account{text-align:right; font-size:12.5px; color:var(--text-faint);}
   .account a{color:var(--text-dim); text-decoration:none; border-bottom:1px solid var(--line-strong);}
   .account a:hover{color:var(--coral); border-color:var(--coral);}
 
-  main{max-width:640px; margin:0 auto; padding:0 20px;}
-  .screen{display:none;}
-  .screen.active{display:block;}
-  section{padding:24px 4px;}
-  section + section{border-top:1px solid var(--line);}
-  h2{font-size:20px; font-weight:600; margin:0 0 16px;}
+  main{max-width:620px; margin:0 auto; padding:22px 20px 0;}
 
-  .pill-row{display:flex; gap:10px; flex-wrap:wrap;}
-  .pill{display:flex; align-items:center; gap:8px; font-size:14px; background:var(--panel); border:1px solid var(--line-strong); color:var(--text); border-radius:20px; padding:8px 14px; font-family:inherit; cursor:pointer;}
-  .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
-  .dot.on{background:var(--gold);}
-  .dot.off{background:transparent; border:1px solid var(--text-faint);}
-  .price-range-field{margin-top:16px;}
-  .price-range-field .label{font-size:14px; font-weight:600; margin:0 0 2px;}
-  .price-range-field .hint{font-size:12px; color:var(--text-faint); margin:0 0 10px;}
-  .price-range-inputs{display:flex; align-items:center; gap:10px;}
-  .price-box{
-    display:flex; align-items:center; gap:4px; background:var(--panel);
-    border:1px solid var(--line-strong); border-radius:8px; padding:8px 10px;
-    flex:1; min-width:0;
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.08em;
+    color:var(--gold); margin:0 0 6px; text-transform:uppercase;
   }
-  .price-box .prefix{color:var(--text-faint); font-family:'IBM Plex Mono',monospace; font-size:14px;}
-  .price-box input{
-    background:none; border:none; color:var(--text); font-family:'IBM Plex Mono',monospace;
-    font-size:14px; width:100%; min-width:0; padding:0;
+  .tool-title{font-size:23px; font-weight:700; margin:0 0 8px; line-height:1.2;}
+  .tool-lede{color:var(--text-dim); font-size:13.5px; line-height:1.5; margin:0 0 20px;}
+
+  .card{
+    background:var(--panel); border:1px solid var(--line-strong); border-radius:14px;
+    padding:16px; margin-bottom:14px;
   }
-  .price-box input:focus{outline:none;}
-  .price-box input::placeholder{color:var(--text-faint);}
-  .price-range-inputs .to{color:var(--text-faint); font-size:13px; flex-shrink:0;}
-
-  .portfolio-stat{
-    background:linear-gradient(180deg,var(--panel-2),var(--panel));
-    border:1px solid var(--line-strong); border-radius:14px; padding:20px 22px; margin-bottom:20px;
+  .card-label{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--gold);
+    margin:0 0 12px; text-transform:uppercase; letter-spacing:0.04em;
   }
-  .portfolio-stat .label{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-faint); margin:0 0 8px;}
-  .portfolio-stat .value{font-family:'Fraunces',serif; font-weight:600; font-size:34px; margin:0; font-variant-numeric:tabular-nums;}
-  .portfolio-stat .delta{font-family:'IBM Plex Mono',monospace; font-size:13.5px; margin-top:4px;}
-  .portfolio-stat .delta.up{color:var(--gain);}
-  .portfolio-stat .delta.down{color:var(--coral);}
-  .portfolio-stat .sub{color:var(--text-faint); font-size:12px; margin-top:10px;}
 
-  .row{display:flex; gap:16px; padding:14px 0;}
-  .row + .row{border-top:1px solid var(--line);}
-  .date-badge{flex:0 0 52px; text-align:center;}
-  .date-badge .day{font-size:22px; font-weight:600; display:block; font-family:'IBM Plex Mono',monospace;}
-  .date-badge .month{font-size:12px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.04em;}
-  .item-name{font-weight:600; font-size:16px;}
-  .item-note{color:var(--text-dim); font-size:13px; margin-top:2px;}
-  .tag{display:inline-block; font-size:12px; color:var(--coral); margin-top:4px;}
-  .directions{font-size:13px; color:var(--gold); text-decoration:none; display:inline-block; margin-top:6px;}
+  .file-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--panel-2); border:1px dashed var(--line-strong); border-radius:10px;
+    color:var(--text); font-size:14px; font-weight:500; padding:18px; cursor:pointer; position:relative;
+  }
+  .file-btn input[type="file"]{ position:absolute; inset:0; opacity:0; cursor:pointer; }
 
-  .card-img{width:56px; height:auto; border-radius:4px; flex-shrink:0;}
+  .queue{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .queue-thumb{ position:relative; width:60px; height:60px; border-radius:8px; overflow:hidden; border:1px solid var(--line-strong); }
+  .queue-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .queue-thumb .rm{
+    position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%;
+    background:rgba(0,0,0,0.65); color:#fff; border:none; font-size:11px; line-height:1; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
 
-  .buy-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(148px,1fr)); gap:14px;}
-  .buy-tile{
+  button.primary{
+    background:var(--gold); color:#1c1408; border:none; border-radius:10px;
+    font-family:'Space Grotesk',sans-serif; font-size:14.5px; font-weight:600;
+    padding:13px 16px; cursor:pointer; width:100%; margin-top:12px;
+  }
+  button.primary:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  .status-line{
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--text-dim);
+    margin-top:10px; line-height:1.6; min-height:0;
+  }
+
+  .summary{ display:flex; gap:10px; margin-bottom:14px; }
+  .summary .box{
+    flex:1; background:var(--panel); border:1px solid var(--line-strong); border-radius:12px;
+    padding:12px 14px; text-align:center;
+  }
+  .summary .box .box-num{ font-family:'IBM Plex Mono',monospace; font-size:18px; font-weight:600; }
+  .summary .box .box-lbl{ font-size:11px; color:var(--text-faint); margin-top:2px; }
+  .summary .box.good .box-num{ color:var(--gain); }
+  .summary .box.bad .box-num{ color:var(--coral); }
+
+  .row{
     background:var(--panel); border:1px solid var(--line-strong); border-radius:12px;
-    overflow:hidden; display:flex; flex-direction:column;
-    text-decoration:none; color:inherit;
+    padding:13px 14px; margin-bottom:10px;
   }
-  .tile-img{
-    aspect-ratio:5/7; background:var(--panel-2);
-    display:flex; align-items:center; justify-content:center; overflow:hidden;
-  }
-  .tile-img img{width:100%; height:100%; object-fit:contain;}
-  .tile-body{padding:10px 12px 12px; display:flex; flex-direction:column; gap:3px; flex:1;}
-  .tile-name{font-weight:600; font-size:13.5px; line-height:1.25;}
-  .tile-set{color:var(--text-faint); font-size:11px; line-height:1.3;}
-  .tile-set .set-number{font-family:'IBM Plex Mono',monospace;}
-  .tile-tags{display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;}
-  .tile-tag{
-    font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.02em;
-    color:var(--text-faint); background:var(--panel-2); border:1px solid var(--line);
-    border-radius:4px; padding:2px 6px; white-space:nowrap;
-  }
-  .tile-price-row{display:flex; align-items:baseline; justify-content:space-between; gap:6px; margin-top:5px;}
-  .tile-price{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:16px; color:var(--gold); white-space:nowrap;}
-  .tile-price-label{font-family:'IBM Plex Mono',monospace; font-size:8.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-faint); margin-bottom:1px;}
-  .tile-roi{font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:var(--gain); white-space:nowrap;}
-  .tile-roi.verdict-sell{color:var(--gold);}
-  .tile-roi.verdict-hold{color:var(--text-dim);}
-  .tile-roi.verdict-watch{color:var(--coral);}
-  .tile-meta{color:var(--text-faint); font-size:10.5px; font-family:'IBM Plex Mono',monospace; margin-top:2px;}
-  .tile-thesis{color:var(--text-dim); font-size:11.5px; margin-top:6px; line-height:1.35;}
-  .tile-reasons{color:var(--text-dim); font-size:11.5px; margin:6px 0 0; padding-left:14px; line-height:1.4; list-style:none;}
-  .tile-reasons li{position:relative; margin-bottom:3px;}
-  .tile-reasons li::before{content:"–"; position:absolute; left:-13px; color:var(--text-faint);}
-  .tile-source{color:var(--text-faint); font-size:10px; margin-top:6px;}
-  .tile-links{display:flex; flex-wrap:wrap; gap:4px 10px; margin-top:8px;}
-  .tile-links a{color:var(--gold); font-size:11px; text-decoration:none; font-family:'IBM Plex Mono',monospace;}
-  .tile-links a:hover{text-decoration:underline;}
-  .empty{color:var(--text-dim); font-size:14px;}
-  .warn{border-left:3px solid var(--coral); padding:12px 16px; background:var(--panel); border-radius:0 8px 8px 0; margin-top:16px;}
-  .warn .item-name{color:var(--text);}
+  .row .top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:8px; }
+  .row .name{ font-size:14.5px; font-weight:600; margin:0; }
+  .row .meta{ font-size:11.5px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace; margin:2px 0 0; }
+  .row .rm-row{ background:none; border:none; color:var(--text-faint); font-size:16px; cursor:pointer; padding:0 4px; line-height:1; }
 
-  .tabbar{position:fixed; left:0; right:0; bottom:0; display:flex; background:var(--panel); border-top:1px solid var(--line); padding:8px 0 calc(8px + env(safe-area-inset-bottom)); z-index:10;}
-  .tabbar button{flex:1; background:none; border:none; color:var(--text-faint); font-family:'Space Grotesk',sans-serif; font-size:11px; display:flex; flex-direction:column; align-items:center; gap:4px; padding:4px 0; cursor:pointer;}
-  .tabbar button.active{color:var(--gold);}
-  .tabbar svg{width:22px; height:22px;}
+  .row .price-line{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .row .price-line .market{ font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text-dim); white-space:nowrap; }
+  .row .price-line .market strong{ color:var(--text); }
+  .row .price-line .no-price{ font-size:12.5px; color:var(--coral); font-family:'IBM Plex Mono',monospace; }
+
+  .ask-wrap{ position:relative; width:100px; }
+  .ask-wrap span{ position:absolute; left:8px; top:50%; transform:translateY(-50%); color:var(--text-dim); font-family:'IBM Plex Mono',monospace; font-size:13px; }
+  .ask-wrap input[type="number"]{
+    width:100%; background:var(--panel-2); border:1px solid var(--line-strong); border-radius:9px;
+    color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:14px; padding:8px 8px 8px 20px;
+  }
+  .ask-wrap input:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+
+  .verdict-chip{
+    margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:11.5px; font-weight:600;
+    padding:4px 9px; border-radius:6px; white-space:nowrap;
+  }
+  .row.pending .verdict-chip{ background:var(--panel-2); color:var(--text-dim); }
+  .row.good .verdict-chip{ background:var(--gain-bg); color:var(--gain); }
+  .row.mid .verdict-chip{ background:var(--gold-bg); color:var(--gold); }
+  .row.bad .verdict-chip{ background:var(--coral-bg); color:var(--coral); }
+
+  .row a.tcg-link{ font-size:11.5px; color:var(--gold); text-decoration:none; }
+  .row a.tcg-link:hover{ text-decoration:underline; }
+
+  footer{
+    text-align:center; color:var(--text-faint); font-size:11.5px; margin-top:20px;
+    line-height:1.6; padding:0 20px;
+  }
+  footer a{ color:var(--gold); }
+
+  .empty-state{ text-align:center; color:var(--text-dim); font-size:13px; padding:20px 10px; }
 </style>
 </head>
 <body>
   <header>
     <div>
       <h1 class="brand"><span>poke</span><span class="flip">flips</span></h1>
-      <p id="updated">Loading…</p>
     </div>
     <div class="account">
       <div id="account-email">&nbsp;</div>
       <a href="/api/auth/logout">Log out</a>
     </div>
   </header>
+
   <main>
-    <section id="screen-buylist" class="screen active">
-      <h2>Strategy</h2>
-      <div id="strategy-list" class="pill-row"></div>
-      <div class="price-range-field">
-        <p class="label">Price range</p>
-        <p class="hint">Show picks within this range (inclusive) — research caps at $1,000/card</p>
-        <div class="price-range-inputs">
-          <div class="price-box">
-            <span class="prefix">$</span>
-            <input type="number" id="price-min-input" placeholder="Min" min="0" max="1000" inputmode="decimal">
-          </div>
-          <span class="to">to</span>
-          <div class="price-box">
-            <span class="prefix">$</span>
-            <input type="number" id="price-max-input" placeholder="1,000" min="0" max="1000" inputmode="decimal">
-          </div>
-        </div>
-      </div>
-    </section>
-    <section id="screen-buylist2" class="screen active" style="border-top:1px solid var(--line);">
-      <h2>Buy list</h2>
-      <div id="buylist-list"></div>
-      <div id="giveaways-list"></div>
-    </section>
-    <section id="screen-owned" class="screen">
-      <h2>Owned</h2>
-      <div id="portfolio-stat"></div>
-      <div id="holdings-list"><p class="empty">Loading…</p></div>
-    </section>
-    <section id="screen-events" class="screen">
-      <h2>Upcoming shows</h2>
-      <div id="shows-list"></div>
-    </section>
+    <p class="eyebrow">Binder Scan</p>
+    <h2 class="tool-title">Bulk card pricing</h2>
+    <p class="tool-lede">Photograph a binder page, identify everything on it, and pull live market prices in one pass.</p>
+
+    <div class="card">
+      <p class="card-label">1 · Add photos</p>
+      <label class="file-btn" for="photoInput">
+        <span>📷 Add a binder page photo</span>
+        <input type="file" accept="image/*" capture="environment" id="photoInput">
+      </label>
+      <div class="queue" id="queue"></div>
+      <button class="primary" id="scanBtn" disabled>Identify &amp; price all photos</button>
+      <p class="status-line" id="scanStatus"></p>
+    </div>
+
+    <div class="summary" id="summary" style="display:none;">
+      <div class="box"><div class="box-num" id="sumCount">0</div><div class="box-lbl">cards</div></div>
+      <div class="box"><div class="box-num" id="sumAsk">$0</div><div class="box-lbl">total asking</div></div>
+      <div class="box good" id="sumValueBox"><div class="box-num" id="sumValue">$0</div><div class="box-lbl">total market</div></div>
+    </div>
+
+    <div id="results">
+      <div class="empty-state" id="emptyState">Scanned cards will show up here.</div>
+    </div>
   </main>
 
-  <nav class="tabbar">
-    <button data-screen="buylist" class="active">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="5" cy="6" r="1"/><line x1="9" y1="6" x2="20" y2="6"/><circle cx="5" cy="12" r="1"/><line x1="9" y1="12" x2="20" y2="12"/><circle cx="5" cy="18" r="1"/><line x1="9" y1="18" x2="20" y2="18"/></svg>
-      Buy list
-    </button>
-    <button data-screen="owned">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M3 8 L12 4 L21 8 L21 17 L12 21 L3 17 Z"/><path d="M3 8 L12 12 L21 8"/><line x1="12" y1="12" x2="12" y2="21"/></svg>
-      Owned
-    </button>
-    <button data-screen="events">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
-      Events
-    </button>
-  </nav>
+  <footer>
+    Prices from <a href="https://pokemontcg.io" target="_blank" rel="noopener">pokemontcg.io</a> (TCGPlayer market data) — a fair-value reference, not a guaranteed eBay sale price. Verify big-ticket cards before buying.
+  </footer>
 
 <script>
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const TYPE_LABELS = { sealed: 'Sealed', single: 'Raw single', slab: 'Slab' };
-const TOGGLE_LABELS = { sealed: 'Sealed', rawSingles: 'Raw singles', slabs: 'Slabs' };
-let holdingsLoaded = false;
-let currentData = null;
+const $ = id => document.getElementById(id);
+let queuedPhotos = []; // {file, url}
+let cards = [];        // {id, name, set, number, variant, rarity, confidence, marketPrice, priceLabel, tcgUrl, askingPrice, status}
 
 fetch('/api/session').then(r => r.json()).then(s => {
   document.getElementById('account-email').textContent = s.authenticated ? s.email : '';
 }).catch(() => {});
-
-document.querySelectorAll('.tabbar button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tabbar button').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    btn.classList.add('active');
-    if (btn.dataset.screen === 'buylist') {
-      document.getElementById('screen-buylist').classList.add('active');
-      document.getElementById('screen-buylist2').classList.add('active');
-    } else {
-      document.getElementById('screen-' + btn.dataset.screen).classList.add('active');
-    }
-    if (btn.dataset.screen === 'owned' && !holdingsLoaded) {
-      holdingsLoaded = true;
-      loadHoldings();
-    }
-  });
-});
-
-function cardImageUrl(cardId) {
-  if (!cardId) return null;
-  const idx = cardId.lastIndexOf('-');
-  if (idx === -1) return null;
-  return `https://images.pokemontcg.io/${cardId.slice(0, idx)}/${cardId.slice(idx + 1)}.png`;
-}
-
-function tcgplayerUrl(item) {
-  if (item.tcgplayerUrl) return item.tcgplayerUrl;
-  return `https://www.tcgplayer.com/search/pokemon/product?productLineName=pokemon&q=${encodeURIComponent((item.card + ' ' + (item.set || '')).trim())}`;
-}
-
-function pricechartingUrl(item) {
-  if (item.pricechartingUrl) return item.pricechartingUrl;
-  return `https://www.pricecharting.com/search-products?q=${encodeURIComponent((item.card + ' ' + (item.set || '')).trim())}&type=prices`;
-}
-
-function ebaySoldUrl(item) {
-  const { number } = parseSet(item.set);
-  const q = [item.card, number, item.grade].filter(Boolean).join(' ');
-  return `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(q)}&_sacat=0&LH_Sold=1&LH_Complete=1`;
-}
-
-function parseROI(str) {
-  const m = String(str || '').match(/-?\d+(\.\d+)?/);
-  return m ? parseFloat(m[0]) : -Infinity;
-}
-
-function formatShortDate(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr + 'T00:00:00');
-  if (isNaN(d)) return dateStr;
-  return `${MONTHS[d.getMonth()]} ${d.getDate()}`;
-}
-
-function parseSet(setStr) {
-  if (!setStr) return { name: '', number: '', rarity: '' };
-  const [main, rarityRaw] = setStr.split(',').map(s => s.trim());
-  const numberMatch = main.match(/#\S+/);
-  const number = numberMatch ? numberMatch[0] : '';
-  const name = main.replace(/\([^)]*\)/g, '').replace(/#\S+/, '').trim();
-  return { name, number, rarity: rarityRaw || '' };
-}
-
-function capitalize(str) {
-  return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
-}
-
-function renderReasons(thesis) {
-  if (Array.isArray(thesis)) {
-    return `<ul class="tile-reasons">${thesis.map(r => `<li>${r}</li>`).join('')}</ul>`;
-  }
-  return thesis ? `<div class="tile-thesis">${thesis}</div>` : '';
-}
-
-async function resolveCardImage(name, set) {
-  try {
-    const res = await fetch(`/api/card-image?name=${encodeURIComponent(name)}&set=${encodeURIComponent(set || '')}`);
-    if (!res.ok) {
-      console.warn('[card-image] request failed', name, set, res.status);
-      return null;
-    }
-    const data = await res.json();
-    if (!data.image) console.warn('[card-image] no match', name, set, data.debug);
-    return data.image || null;
-  } catch (e) {
-    console.warn('[card-image] error', name, set, e);
-    return null;
-  }
-}
-
-function cardImageSlot(name, set, cardId) {
-  const direct = cardImageUrl(cardId);
-  if (direct) return `<img class="card-img" src="${direct}" alt="${name}" loading="lazy">`;
-  return `<img class="card-img card-img-lookup" data-name="${name}" data-set="${set || ''}" alt="${name}">`;
-}
-
-async function fillLookupImages() {
-  for (const el of document.querySelectorAll('.card-img-lookup')) {
-    const img = await resolveCardImage(el.dataset.name, el.dataset.set);
-    if (img) el.src = img; else el.remove();
-  }
-}
 
 function requireSession(res) {
   if (res.status === 401) {
@@ -323,206 +200,230 @@ function requireSession(res) {
   return true;
 }
 
-async function toggleType(type, current) {
-  const res = await fetch('/api/toggle', {
+// ---------- Photo queue ----------
+$('photoInput').addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  queuedPhotos.push({ file, url: URL.createObjectURL(file) });
+  renderQueue();
+  updateScanBtnState();
+  e.target.value = '';
+});
+
+function renderQueue() {
+  const q = $('queue');
+  q.innerHTML = '';
+  queuedPhotos.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'queue-thumb';
+    div.innerHTML = `<img src="${p.url}"><button class="rm" data-i="${i}">×</button>`;
+    q.appendChild(div);
+  });
+  q.querySelectorAll('.rm').forEach(btn => {
+    btn.addEventListener('click', () => {
+      queuedPhotos.splice(parseInt(btn.dataset.i), 1);
+      renderQueue();
+      updateScanBtnState();
+    });
+  });
+}
+
+function updateScanBtnState() {
+  $('scanBtn').disabled = queuedPhotos.length === 0;
+}
+
+// ---------- Vision identification (proxied through the Worker) ----------
+async function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result.split(',')[1]);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+async function identifyPhoto(file) {
+  const base64 = await fileToBase64(file);
+  const mediaType = file.type || 'image/jpeg';
+
+  const res = await fetch('/api/identify', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type, value: !current })
+    body: JSON.stringify({ image: base64, mediaType })
   });
-  if (!requireSession(res)) return;
-  if (!res.ok) return;
-  const state = await res.json();
-  currentData.strategy.productTypes = state;
-  renderStrategy(state);
-  renderBuyList(currentData);
+  if (!requireSession(res)) throw new Error('Signed out');
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data.cards || [];
 }
 
-async function setPriceRange(minPrice, maxPrice) {
-  const res = await fetch('/api/price', {
+// ---------- Pricing lookup (proxied through the Worker) ----------
+async function lookupPrice(card) {
+  const res = await fetch('/api/lookup-price', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ minPrice, maxPrice })
+    body: JSON.stringify({ name: card.name, set: card.set, number: card.number, variant: card.variant })
   });
-  if (!requireSession(res)) return;
-  if (!res.ok) return;
-  const data = await res.json();
-  currentData.strategy.priceRange = data.priceRange;
-  renderBuyList(currentData);
+  if (!requireSession(res)) throw new Error('Signed out');
+  if (!res.ok) return null;
+  return res.json();
 }
 
-function renderStrategy(types) {
-  const el = document.getElementById('strategy-list');
-  el.innerHTML = Object.entries(types).map(([k, v]) => `
-    <button class="pill" data-type="${k}"><span class="dot ${v ? 'on' : 'off'}"></span>${TOGGLE_LABELS[k] || k} ${v ? 'on' : 'off'}</button>
-  `).join('');
-  el.querySelectorAll('.pill').forEach(btn => {
-    btn.addEventListener('click', () => toggleType(btn.dataset.type, types[btn.dataset.type]));
-  });
-}
+// ---------- Orchestration ----------
+$('scanBtn').addEventListener('click', async () => {
+  if (queuedPhotos.length === 0) return;
+  $('scanBtn').disabled = true;
+  $('emptyState').style.display = 'none';
+  const photos = [...queuedPhotos];
+  queuedPhotos = [];
+  renderQueue();
 
-function renderPriceRange(range) {
-  const minInput = document.getElementById('price-min-input');
-  const maxInput = document.getElementById('price-max-input');
-  minInput.value = range?.min != null ? range.min : '';
-  maxInput.value = range?.max != null ? range.max : '';
-  const commit = () => {
-    const min = minInput.value ? Math.min(Number(minInput.value), 1000) : null;
-    const max = maxInput.value ? Math.min(Number(maxInput.value), 1000) : null;
-    setPriceRange(min, max);
-  };
-  minInput.onchange = commit;
-  maxInput.onchange = commit;
-}
-
-function renderBuyList(data) {
-  const typeMap = { sealed: 'sealed', single: 'rawSingles', slab: 'slabs' };
-  const { min: minPrice, max: maxPrice } = data.strategy.priceRange || {};
-  const visible = data.buyList
-    .filter(b => data.strategy.productTypes[typeMap[b.type]] !== false &&
-      (minPrice == null || b.targetPrice >= minPrice) &&
-      (maxPrice == null || b.targetPrice <= maxPrice))
-    .sort((a, b) => parseROI(b.expectedROI) - parseROI(a.expectedROI));
-  const buyEl = document.getElementById('buylist-list');
-  if (!visible.length) {
-    buyEl.innerHTML = `<p class="empty">${data.buyList.length ? 'No picks match your current filters.' : (data.buyListNote || 'No picks right now.')}</p>`;
-  } else {
-    const tiles = visible.map(b => {
-      const typeLabel = TYPE_LABELS[b.type] || b.type || '';
-      const { name: setName, number: setNumber, rarity } = parseSet(b.set);
-      const secondary = b.ev != null ? `EV $${b.ev.toFixed(2)}` : (b.marketPrice != null ? `mkt $${b.marketPrice.toFixed(2)}` : '');
-      return `<div class="buy-tile">
-        <div class="tile-img">${cardImageSlot(b.card, b.set, b.cardId)}</div>
-        <div class="tile-body">
-          <div class="tile-name">${b.card}${b.grade ? ' · ' + b.grade : ''}</div>
-          <div class="tile-set">${setName}${setNumber ? ` <span class="set-number">${setNumber}</span>` : ''}</div>
-          <div class="tile-tags"><span class="tile-tag">${typeLabel}</span>${rarity ? `<span class="tile-tag">${capitalize(rarity)}</span>` : ''}</div>
-          <div class="tile-price-row">
-            <div>
-              <div class="tile-price-label">Target (negotiate)</div>
-              <span class="tile-price">$${b.targetPrice.toFixed(2)}</span>
-            </div>
-            <span class="tile-roi">${b.expectedROI}</span>
-          </div>
-          <div class="tile-meta">${secondary ? secondary + ' · ' : ''}by ${formatShortDate(b.sellBy)}</div>
-          ${renderReasons(b.thesis)}
-          <div class="tile-source">${b.source}</div>
-          <div class="tile-links">
-            ${b.type === 'slab'
-              ? `<a href="${ebaySoldUrl(b)}" target="_blank" rel="noopener">eBay sold ↗</a>`
-              : `<a href="${tcgplayerUrl(b)}" target="_blank" rel="noopener">TCGplayer ↗</a>`}
-            <a href="${pricechartingUrl(b)}" target="_blank" rel="noopener">PriceCharting ↗</a>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-    buyEl.innerHTML = `<div class="buy-grid">${tiles}</div>`;
+  for (let i = 0; i < photos.length; i++) {
+    $('scanStatus').textContent = `Reading photo ${i + 1} of ${photos.length}…`;
+    try {
+      const identified = await identifyPhoto(photos[i].file);
+      for (const c of identified) {
+        const row = {
+          id: 'c' + Math.random().toString(36).slice(2),
+          name: c.name, set: c.set, number: c.number, rarity: c.rarity,
+          variant: c.variant, confidence: c.confidence,
+          marketPrice: null, priceLabel: null, tcgUrl: null,
+          askingPrice: null, status: 'pricing'
+        };
+        cards.push(row);
+        renderResults();
+        lookupPrice(row).then(priceInfo => {
+          if (priceInfo) {
+            row.marketPrice = priceInfo.marketPrice;
+            row.priceLabel = priceInfo.priceLabel;
+            row.tcgUrl = priceInfo.tcgUrl;
+          }
+          row.status = 'priced';
+          refreshRow(row);
+        }).catch(() => {
+          row.status = 'price-failed';
+          refreshRow(row);
+        });
+      }
+    } catch (err) {
+      $('scanStatus').textContent = `Photo ${i + 1} failed: ${err.message}`;
+    }
   }
+  $('scanStatus').textContent = `Done — ${cards.length} card(s) found so far.`;
+  updateScanBtnState();
+});
 
-  const giveEl = document.getElementById('giveaways-list');
-  giveEl.innerHTML = data.giveaways.length
-    ? data.giveaways.map(g => `<div class="warn"><div class="item-name">${g.name}</div><div class="tag">${g.flag}</div><div class="item-note">${g.note}</div></div>`).join('')
-    : '';
+function fmt(n) { return '$' + n.toFixed(2); }
 
-  fillLookupImages();
+function verdictFor(card) {
+  if (card.status === 'price-failed') return { cls: 'row pending', chip: 'Lookup failed' };
+  if (card.status !== 'priced') return { cls: 'row pending', chip: 'Pricing…' };
+  if (card.marketPrice == null) return { cls: 'row pending', chip: 'No price found' };
+  if (card.askingPrice != null && card.askingPrice > 0) {
+    const margin = ((card.marketPrice - card.askingPrice) / card.askingPrice) * 100;
+    if (margin >= 30) return { cls: 'row good', chip: `+${margin.toFixed(0)}% margin` };
+    if (margin >= 0) return { cls: 'row mid', chip: `${margin.toFixed(0)}% margin` };
+    return { cls: 'row bad', chip: `${margin.toFixed(0)}% margin` };
+  }
+  return { cls: 'row pending', chip: 'Enter asking price' };
 }
 
-function renderPortfolioStat(holdings) {
-  const el = document.getElementById('portfolio-stat');
-  const priced = holdings.filter(h => h.buyPrice != null);
-  if (!priced.length) { el.innerHTML = ''; return; }
-  const invested = priced.reduce((sum, h) => sum + h.buyPrice, 0);
-  const current = priced.reduce((sum, h) => sum + (h.currentMarketPrice ?? h.buyPrice), 0);
-  const gain = current - invested;
-  const gainPct = invested > 0 ? (gain / invested) * 100 : 0;
-  const sign = gain >= 0 ? '+' : '−';
-  const deltaClass = gain >= 0 ? 'up' : 'down';
-  el.innerHTML = `
-    <div class="portfolio-stat">
-      <p class="label">Current value</p>
-      <p class="value tabular">$${current.toFixed(2)}</p>
-      <p class="delta tabular ${deltaClass}">${sign}$${Math.abs(gain).toFixed(2)} (${sign}${Math.abs(gainPct).toFixed(1)}%)</p>
-      <p class="sub tabular">$${invested.toFixed(2)} invested across ${priced.length} card${priced.length === 1 ? '' : 's'}</p>
-    </div>`;
+function rowInnerHTML(card) {
+  const metaParts = [card.set, card.number ? '#' + card.number : null, card.rarity].filter(Boolean);
+  if (card.confidence === 'low') metaParts.push('low confidence');
+
+  const priceHtml = card.status === 'priced' && card.marketPrice != null
+    ? `<span class="market">Market <strong>${fmt(card.marketPrice)}</strong>${card.priceLabel ? ' <span style="opacity:.6">(' + card.priceLabel + ')</span>' : ''}</span>`
+    : card.status === 'price-failed'
+      ? `<span class="no-price">Couldn't fetch price</span>`
+      : `<span class="market">Looking up…</span>`;
+
+  const { chip } = verdictFor(card);
+
+  return `
+    <div class="top">
+      <div>
+        <p class="name">${card.name}</p>
+        <p class="meta">${metaParts.join(' · ') || '—'}${card.tcgUrl ? ' · <a class="tcg-link" href="' + card.tcgUrl + '" target="_blank" rel="noopener">TCGplayer ↗</a>' : ''}</p>
+      </div>
+      <button class="rm-row" data-id="${card.id}">×</button>
+    </div>
+    <div class="price-line">
+      ${priceHtml}
+      <div class="ask-wrap">
+        <span>$</span>
+        <input type="number" placeholder="asking" step="0.01" min="0" data-id="${card.id}" class="askInput" value="${card.askingPrice ?? ''}">
+      </div>
+      <span class="verdict-chip">${chip}</span>
+    </div>
+  `;
 }
 
-async function loadHoldings() {
-  const el = document.getElementById('holdings-list');
-  const res = await fetch('/holdings.json?_=' + Date.now());
-  if (!requireSession(res)) return;
-  if (!res.ok) { el.innerHTML = '<p class="empty">Could not load holdings.</p>'; return; }
-  const data = await res.json();
-  renderPortfolioStat(data.holdings || []);
-  renderHoldings(data.holdings || []);
+function bindRowEvents(rowEl, card) {
+  rowEl.querySelector('.askInput').addEventListener('input', (e) => {
+    const val = parseFloat(e.target.value);
+    card.askingPrice = isNaN(val) ? null : val;
+    // Update only this row's class/chip in place -- never rebuild the DOM here,
+    // or every keystroke would blow away the input's own focus mid-type.
+    const { cls, chip } = verdictFor(card);
+    rowEl.className = cls;
+    rowEl.querySelector('.verdict-chip').textContent = chip;
+    updateSummary();
+  });
+  rowEl.querySelector('.rm-row').addEventListener('click', () => {
+    cards = cards.filter(c => c.id !== card.id);
+    rowEl.remove();
+    if (cards.length === 0) {
+      $('results').innerHTML = '<div class="empty-state" id="emptyState">Scanned cards will show up here.</div>';
+      $('summary').style.display = 'none';
+    }
+    updateSummary();
+  });
 }
 
-function renderHoldings(holdings) {
-  const el = document.getElementById('holdings-list');
-  if (!holdings.length) {
-    el.innerHTML = '<p class="empty">Nothing bought yet. Once you pick up a card from the buy list, it shows up here with a hold/sell verdict each run.</p>';
+function renderResults() {
+  const container = $('results');
+  container.innerHTML = '';
+  if (cards.length === 0) {
+    container.innerHTML = '<div class="empty-state" id="emptyState">Scanned cards will show up here.</div>';
+    $('summary').style.display = 'none';
     return;
   }
-  const tiles = holdings.map(h => {
-    const verdictClass = h.verdict === 'sell' ? 'verdict-sell' : h.verdict === 'watch' ? 'verdict-watch' : 'verdict-hold';
-    const verdictLabel = h.verdict === 'sell' ? 'Sell now' : h.verdict === 'watch' ? 'Watch' : 'Hold';
-    const { name: setName, number: setNumber, rarity } = parseSet(h.set);
-    const metaParts = [];
-    if (h.currentMarketPrice != null) metaParts.push(`mkt $${h.currentMarketPrice.toFixed(2)}`);
-    if (h.buyDate) metaParts.push(`bought ${h.buyDate}`);
-    return `<a class="buy-tile" href="${h.grade ? ebaySoldUrl(h) : tcgplayerUrl(h)}" target="_blank" rel="noopener">
-      <div class="tile-img">${cardImageSlot(h.card, h.set, h.cardId)}</div>
-      <div class="tile-body">
-        <div class="tile-name">${h.card}</div>
-        <div class="tile-set">${setName}${setNumber ? ` <span class="set-number">${setNumber}</span>` : ''}</div>
-        ${rarity ? `<div class="tile-tags"><span class="tile-tag">${capitalize(rarity)}</span></div>` : ''}
-        <div class="tile-price-row">
-          <span class="tile-price">${h.buyPrice != null ? '$' + h.buyPrice.toFixed(2) : '—'}</span>
-          <span class="tile-roi ${verdictClass}">${verdictLabel}</span>
-        </div>
-        <div class="tile-meta">${metaParts.join(' · ')}</div>
-        <div class="tile-thesis">${h.recommendation || ''}</div>
-      </div>
-    </a>`;
-  }).join('');
-  el.innerHTML = `<div class="buy-grid">${tiles}</div>`;
-  fillLookupImages();
+  $('summary').style.display = 'flex';
+  cards.forEach(card => {
+    const rowEl = document.createElement('div');
+    rowEl.id = 'row-' + card.id;
+    rowEl.className = verdictFor(card).cls;
+    rowEl.innerHTML = rowInnerHTML(card);
+    container.appendChild(rowEl);
+    bindRowEvents(rowEl, card);
+  });
+  updateSummary();
 }
 
-Promise.all([
-  fetch('./data.json?_=' + Date.now()).then(r => r.json()),
-  fetch('/api/state').then(r => r.ok ? r.json() : null).catch(() => null)
-]).then(([data, liveState]) => {
-  if (liveState) {
-    data.strategy.productTypes = liveState.productTypes;
-    data.strategy.priceRange = liveState.priceRange;
-  }
-  render(data);
-}).catch(() => { document.getElementById('updated').textContent = 'Could not load data.'; });
+// Refreshes one card's row in place (e.g. once its price lookup resolves)
+// without touching any other row -- so typing in another row's asking-price
+// field mid-lookup never loses focus.
+function refreshRow(card) {
+  const rowEl = document.getElementById('row-' + card.id);
+  if (!rowEl) { renderResults(); return; }
+  rowEl.className = verdictFor(card).cls;
+  rowEl.innerHTML = rowInnerHTML(card);
+  bindRowEvents(rowEl, card);
+  updateSummary();
+}
 
-function render(data) {
-  currentData = data;
-  document.getElementById('updated').textContent = 'Updated ' + data.generated_at;
-  renderStrategy(data.strategy.productTypes);
-  renderPriceRange(data.strategy.priceRange);
-
-  const shows = [...data.shows].sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
-  document.getElementById('shows-list').innerHTML = shows.map(s => {
-    const d = new Date(s.start_date + 'T00:00:00');
-    const daysUntil = Math.ceil((d - new Date()) / 86400000);
-    const countdown = daysUntil > 1 ? `In ${daysUntil} days` : daysUntil === 1 ? 'Tomorrow' : daysUntil === 0 ? 'Today' : '';
-    const mapsUrl = 'https://maps.apple.com/?q=' + encodeURIComponent(s.venue);
-    return `<div class="row">
-      <div class="date-badge"><span class="day">${d.getDate()}</span><span class="month">${MONTHS[d.getMonth()]}</span></div>
-      <div>
-        <div class="item-name">${s.name}</div>
-        <div class="item-note">${s.venue} · ${s.display_dates}${countdown ? ' · ' + countdown : ''}</div>
-        <div class="item-note">${s.note}</div>
-        ${s.unconfirmed ? '<div class="tag">Unconfirmed</div>' : ''}
-        <a class="directions" href="${mapsUrl}">Directions</a>
-      </div>
-    </div>`;
-  }).join('');
-
-  renderBuyList(data);
+function updateSummary() {
+  let totalAsk = 0, totalValue = 0;
+  cards.forEach(card => {
+    if (card.marketPrice != null) totalValue += card.marketPrice;
+    if (card.askingPrice != null) totalAsk += card.askingPrice;
+  });
+  $('sumCount').textContent = cards.length;
+  $('sumAsk').textContent = '$' + totalAsk.toFixed(2);
+  $('sumValue').textContent = '$' + totalValue.toFixed(2);
+  const valueBox = $('sumValueBox');
+  valueBox.className = 'box' + (totalValue > totalAsk && totalAsk > 0 ? ' good' : (totalAsk > 0 && totalValue < totalAsk ? ' bad' : ''));
 }
 </script>
 </body>

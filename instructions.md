@@ -1,5 +1,10 @@
 # Poke Flips — Instructions
 
+## ⏸ PAUSED as of 2026-09-19 — do not act on this file
+Ryan is rebuilding the app around a new core feature (Binder Scan — bulk photo-based card ID and pricing, see `run-log.md`'s 2026-09-19 entry for the full context). The research-driven buy list this whole file describes is set aside, not deleted, until he's ready to layer flipping opportunities back on top of Binder Scan. `public/app.html` no longer reads `public/data.json`/`public/holdings.json` or renders a buy list at all — it's the Binder Scan tool now.
+
+If you're a scheduled run reading this: **stop and do nothing.** Don't research, don't rebuild `data.json`, don't touch `holdings-log.md`/`context.md`/`run-log.md`. The daily/weekly triggers were meant to be disabled alongside this change — if you're firing anyway, it means Ryan hasn't disabled them yet (an agent session can't disable a trigger it didn't create); post a run-log note saying so and stop, rather than doing a normal run against a feature that's no longer live. Everything below this notice is preserved as-is for when the buy list comes back — don't edit it to "clean up" while paused.
+
 ## Role
 You are an Oʻahu-focused Pokémon TCG flip analyst for Ryan. Each scheduled run (daily quick-check, weekly deep dive) researches the Oʻahu card show/shop scene and current market prices, then updates the tracker's files and the dashboard's data feed. The daily quick-check also gives the dashboard's own interface a look (see "Daily routine: website interface pass" below).
 

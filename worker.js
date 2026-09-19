@@ -1,6 +1,6 @@
 const SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 const PROTECTED_PAGES = ['/app.html', '/data.json', '/holdings.json'];
-const PROTECTED_API = ['/api/state', '/api/toggle', '/api/price', '/api/card-image'];
+const PROTECTED_API = ['/api/identify', '/api/lookup-price'];
 
 export default {
   async fetch(request, env) {
@@ -30,58 +30,115 @@ export default {
       return logout(request, url, env);
     }
 
-    if (url.pathname === '/api/state' && request.method === 'GET') {
-      const [productTypes, priceRange] = await Promise.all([getState(env), getPriceRange(env)]);
-      return json({ productTypes, priceRange });
+    if (url.pathname === '/api/identify' && request.method === 'POST') {
+      return handleIdentify(request, env);
     }
 
-    if (url.pathname === '/api/card-image' && request.method === 'GET') {
-      const name = url.searchParams.get('name');
-      const rawSet = url.searchParams.get('set') || '';
-      if (!name) return json({ image: null });
-      // data.json's "set" field is a display string like
-      // "Evolving Skies (SWSH07) #095/203, non-alt-art" — the API's set.name
-      // is just "Evolving Skies", so strip the set-code/card-number/variant tail.
-      const set = rawSet.replace(/\s*\([^)]*\)/g, '').replace(/\s*#.*$/, '').trim();
-      try {
-        const withSet = await lookupCardImage(name, set);
-        const fallback = !withSet.image && set ? await lookupCardImage(name, '') : null;
-        const result = withSet.image ? withSet : (fallback || withSet);
-        return json({
-          image: result.image,
-          debug: { name, set, status: withSet.status, fallbackTried: !!fallback, fallbackStatus: fallback?.status }
-        });
-      } catch (e) {
-        return json({ image: null, debug: { name, set, error: String(e) } });
-      }
-    }
-
-    if (url.pathname === '/api/toggle' && request.method === 'POST') {
-      const body = await request.json().catch(() => null);
-      if (!body || !['sealed', 'rawSingles', 'slabs'].includes(body.type) || typeof body.value !== 'boolean') {
-        return json({ error: 'Bad request' }, 400);
-      }
-      const state = await getState(env);
-      state[body.type] = body.value;
-      await env.STATE_KV.put('productTypes', JSON.stringify(state));
-      return json(state);
-    }
-
-    if (url.pathname === '/api/price' && request.method === 'POST') {
-      const body = await request.json().catch(() => null);
-      const validBound = (v) => v === null || v === undefined || (typeof v === 'number' && v >= 0 && v <= 1000);
-      if (!body || !validBound(body.minPrice) || !validBound(body.maxPrice) ||
-          (typeof body.minPrice === 'number' && typeof body.maxPrice === 'number' && body.minPrice > body.maxPrice)) {
-        return json({ error: 'Bad request' }, 400);
-      }
-      const priceRange = { min: body.minPrice ?? null, max: body.maxPrice ?? null };
-      await env.STATE_KV.put('priceRange', JSON.stringify(priceRange));
-      return json({ priceRange });
+    if (url.pathname === '/api/lookup-price' && request.method === 'POST') {
+      return handleLookupPrice(request, env);
     }
 
     return env.ASSETS.fetch(request);
   }
 };
+
+// ---- Binder Scan: card identification (Claude vision) ----
+
+const IDENTIFY_PROMPT =
+  'This photo shows one or more Pokémon cards (a binder page, a stack, or a table spread). ' +
+  'Identify EVERY distinct card you can see. Reply with ONLY a JSON array, no other text, ' +
+  'each item shaped exactly like: {"name": string, "set": string or null, "number": string or null, ' +
+  '"rarity": string or null, "variant": "holofoil" or "reverseHolofoil" or "normal" or null, "confidence": "high" or "medium" or "low"}. ' +
+  'If you cannot make out a card at all, omit it rather than guessing wildly.';
+
+async function handleIdentify(request, env) {
+  const body = await request.json().catch(() => null);
+  if (!body || !body.image || !body.mediaType) return json({ error: 'Bad request' }, 400);
+  if (!env.ANTHROPIC_API_KEY) return json({ error: 'Card identification is not configured yet (missing API key).' }, 500);
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-5',
+      max_tokens: 1500,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: body.mediaType, data: body.image } },
+          { type: 'text', text: IDENTIFY_PROMPT }
+        ]
+      }]
+    })
+  });
+
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    return json({ error: errBody?.error?.message || `Identification failed (${res.status})` }, 502);
+  }
+
+  const data = await res.json();
+  const textBlock = (data.content || []).find(b => b.type === 'text');
+  if (!textBlock) return json({ error: 'No response text from model' }, 502);
+
+  let raw = textBlock.text.trim();
+  const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenceMatch) raw = fenceMatch[1].trim();
+  const start = raw.indexOf('[');
+  const end = raw.lastIndexOf(']');
+  if (start === -1 || end === -1) return json({ error: 'Could not parse card list from response' }, 502);
+
+  try {
+    const cards = JSON.parse(raw.slice(start, end + 1));
+    return json({ cards });
+  } catch (e) {
+    return json({ error: 'Could not parse card list from response' }, 502);
+  }
+}
+
+// ---- Binder Scan: price lookup (pokemontcg.io) ----
+
+async function handleLookupPrice(request, env) {
+  const body = await request.json().catch(() => null);
+  if (!body || !body.name) return json({ error: 'Bad request' }, 400);
+  const headers = env.POKEMONTCG_API_KEY ? { 'X-Api-Key': env.POKEMONTCG_API_KEY } : {};
+
+  let q = `name:"${body.name}"`;
+  if (body.set) q += ` set.name:"${body.set}"`;
+  let list = await fetchCards(q, headers);
+  if (!list.length) list = await fetchCards(`name:"${body.name}"`, headers);
+  if (!list.length) return json({ marketPrice: null, priceLabel: null, tcgUrl: null });
+
+  let match = list[0];
+  if (body.number) {
+    const numMatch = list.find(c => c.number === body.number);
+    if (numMatch) match = numMatch;
+  }
+
+  const prices = match.tcgplayer && match.tcgplayer.prices;
+  if (!prices) return json({ marketPrice: null, priceLabel: null, tcgUrl: (match.tcgplayer && match.tcgplayer.url) || null });
+
+  const variantOrder = body.variant && prices[body.variant]
+    ? [body.variant]
+    : ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', 'unlimitedHolofoil'];
+  let chosenVariant = null, chosenPrice = null;
+  for (const v of variantOrder) {
+    if (prices[v] && typeof prices[v].market === 'number') { chosenVariant = v; chosenPrice = prices[v].market; break; }
+  }
+  return json({ marketPrice: chosenPrice, priceLabel: chosenVariant, tcgUrl: (match.tcgplayer && match.tcgplayer.url) || null });
+}
+
+async function fetchCards(q, headers) {
+  const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=5`;
+  const res = await fetch(url, { headers });
+  if (!res.ok) return [];
+  const data = await res.json().catch(() => null);
+  return data && data.data ? data.data : [];
+}
 
 // ---- Google OAuth ----
 
@@ -194,32 +251,6 @@ function cookie(name, value, opts = {}) {
   if (opts.expirePast) parts.push('Expires=Thu, 01 Jan 1970 00:00:00 GMT');
   else if (opts.maxAge) parts.push(`Max-Age=${opts.maxAge}`);
   return parts.join('; ');
-}
-
-// ---- Card image lookup ----
-
-async function lookupCardImage(name, set) {
-  const q = set ? `name:"${name}" set.name:"${set}"` : `name:"${name}"`;
-  const apiRes = await fetch(`https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=1`);
-  if (!apiRes.ok) return { image: null, status: apiRes.status };
-  const data = await apiRes.json();
-  const card = data.data && data.data[0];
-  return { image: card ? card.images.small : null, status: apiRes.status };
-}
-
-// ---- Strategy state ----
-
-async function getState(env) {
-  const stored = await env.STATE_KV.get('productTypes');
-  return stored ? JSON.parse(stored) : { sealed: true, rawSingles: true, slabs: true };
-}
-
-async function getPriceRange(env) {
-  const stored = await env.STATE_KV.get('priceRange');
-  if (stored) return JSON.parse(stored);
-  // Migrate the old single-value cap key from before min/max existed.
-  const legacyMax = await env.STATE_KV.get('maxPrice');
-  return { min: null, max: legacyMax ? JSON.parse(legacyMax) : null };
 }
 
 function json(data, status = 200) {

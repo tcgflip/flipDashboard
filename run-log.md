@@ -4,6 +4,28 @@ One entry per scheduled run (daily quick-check or weekly deep dive), newest firs
 
 ---
 
+## 2026-09-19 — Project pivot: Binder Scan replaces the research buy list (out-of-band, Ryan-requested)
+
+**Scope:** Ryan wants to restart the app around a new core feature — a bulk binder-photo scanner (photograph a binder page, identify every card via Claude vision, pull pokemontcg.io market prices, enter an asking price, get an instant buy/pass margin verdict) — rather than the nightly research-driven buy list this whole project was built around. He shared a complete working reference implementation (client-side, own-API-key, ephemeral results) as the starting point.
+
+**Decisions confirmed with Ryan:**
+- Claude API key is proxied through `worker.js` as a Cloudflare secret (`ANTHROPIC_API_KEY`), not pasted client-side — matches how `GOOGLE_CLIENT_SECRET` already works, never touches the browser.
+- Binder Scan replaces the buy list entirely for now. The automated research routine, the buy-list/owned/events tabs, and the daily/weekly triggers are set aside, not deleted.
+
+**Built:**
+- `worker.js`: removed `/api/state`, `/api/toggle`, `/api/price` (buy-list state, now dead). Added `POST /api/identify` (proxies Anthropic's Messages API with vision, server-side key, parses the card-list JSON out of the response) and `POST /api/lookup-price` (proxies pokemontcg.io, same variant-price-picking logic as the reference). Both gated behind the existing Google OAuth session, same as before. Fixed a bug in the reference: it called a nonexistent model (`claude-sonnet-4-6`) — using `claude-sonnet-5`.
+- `public/app.html`: fully replaced — single-purpose Binder Scan tool now (no tabs, no buy list). Kept the existing header/brand chrome and dark ink/panel/gold design tokens for continuity. Removed the reference's client-side API-key setup UI entirely since the Worker holds the key now.
+- Fixed a real UX bug carried in the reference: every keystroke in an asking-price field (and every background price lookup completing) triggered a full list re-render, which drops input focus mid-typing since editable prices are the core interaction. Refactored to update only the specific row that changed (`refreshRow`/`verdictFor` helpers) instead of rebuilding the whole DOM. Verified via a scripted Playwright test: typed "12.50" character-by-character into an asking-price field with a second row's price lookup still pending — focus held throughout, value landed correctly, margin math and color-coding (good/mid/bad) came out right.
+- `instructions.md`: added a paused notice at the top so any future run (or the routine, once re-enabled) knows the buy-list workflow is dormant and why, without deleting any of the accumulated methodology/history below it.
+
+**Couldn't do myself (flagged to Ryan directly):**
+- Disabling the "Flippy Ledger - Daily Check"/"Flippy Ledger - Weekly Check" triggers — same permission boundary as earlier out-of-band fixes (an agent can only manage triggers it created via the API itself). Gave Ryan direct links to disable them himself.
+- Setting the `ANTHROPIC_API_KEY` Cloudflare secret — needs Ryan's Cloudflare dashboard access, same flow as `GOOGLE_CLIENT_SECRET` earlier.
+
+**Files updated:** `worker.js` (rewrite), `public/app.html` (rewrite), `instructions.md` (paused notice), `run-log.md` (this entry). `context.md`, `holdings-log.md`, `public/data.json`, `public/holdings.json` untouched — left in place as dormant reference for when the buy list comes back.
+
+---
+
 ## 2026-09-15 — Thesis fact-check + bullet-format conversion (out-of-band, Ryan-requested)
 
 **Scope:** Ryan asked to double-check the buy list's thesis text accuracy and reformat it as short "top reasons" bullets instead of prose.
