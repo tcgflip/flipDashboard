@@ -265,7 +265,10 @@ async function lookupPrice(card) {
     body: JSON.stringify({ name: card.name, set: card.set, number: card.number, variant: card.variant })
   });
   if (!requireSession(res)) throw new Error('Signed out');
-  if (!res.ok) return null;
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(errBody.error || `HTTP ${res.status}`);
+  }
   return res.json();
 }
 
@@ -300,8 +303,9 @@ $('scanBtn').addEventListener('click', async () => {
           }
           row.status = 'priced';
           refreshRow(row);
-        }).catch(() => {
+        }).catch((err) => {
           row.status = 'price-failed';
+          row.priceError = err.message;
           refreshRow(row);
         });
       }
@@ -335,7 +339,7 @@ function rowInnerHTML(card) {
   const priceHtml = card.status === 'priced' && card.marketPrice != null
     ? `<span class="market">Market <strong>${fmt(card.marketPrice)}</strong>${card.priceLabel ? ' <span style="opacity:.6">(' + card.priceLabel + ')</span>' : ''}</span>`
     : card.status === 'price-failed'
-      ? `<span class="no-price">Couldn't fetch price</span>`
+      ? `<span class="no-price">Couldn't fetch price${card.priceError ? ' (' + card.priceError + ')' : ''}</span>`
       : card.status === 'priced'
         ? `<span class="no-price">No price data</span>`
         : `<span class="market">Looking up…</span>`;

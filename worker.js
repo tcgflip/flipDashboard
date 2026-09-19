@@ -110,76 +110,83 @@ async function handleLookupPrice(request, env) {
   }
   const headers = { 'X-Api-Key': env.SCRYDEX_API_KEY, 'X-Team-ID': env.Scrydex_Team_ID };
 
-  // A card read off a photo often carries the full printed fraction, e.g.
-  // "201/165" — Scrydex's `number` field is only ever the local number
-  // ("201"), never the set total, so that has to be stripped first.
-  const numOnly = body.number ? String(body.number).split('/')[0].trim().replace(/^0+(?=\d)/, '') : null;
-  const setQ = body.set ? ` expansion.name:"${body.set}"` : '';
-  const numQ = numOnly ? ` number:"${numOnly}"` : '';
-  const nameQ = `name:"${body.name}"`;
+  try {
+    // A card read off a photo often carries the full printed fraction, e.g.
+    // "201/165" — Scrydex's `number` field is only ever the local number
+    // ("201"), never the set total, so that has to be stripped first.
+    const numOnly = body.number ? String(body.number).split('/')[0].trim().replace(/^0+(?=\d)/, '') : null;
+    const setQ = body.set ? ` expansion.name:"${body.set}"` : '';
+    const numQ = numOnly ? ` number:"${numOnly}"` : '';
+    const nameQ = `name:"${body.name}"`;
 
-  let list = [];
-  // Number + set alone is the most reliable match — it doesn't depend on
-  // getting the card's name text exactly right at all.
-  if (!list.length && setQ && numQ) list = await fetchScrydexCards(`number:"${numOnly}"${setQ}`, headers);
-  if (!list.length && setQ && numQ) list = await fetchScrydexCards(nameQ + setQ + numQ, headers);
-  if (!list.length && setQ) list = await fetchScrydexCards(nameQ + setQ, headers);
-  if (!list.length && numQ) list = await fetchScrydexCards(nameQ + numQ, headers);
-  if (!list.length) list = await fetchScrydexCards(nameQ, headers);
-  if (!list.length) {
-    const searchText = [body.name, body.set, numOnly].filter(Boolean).join(' ');
-    const searchUrl = `https://www.tcgplayer.com/search/pokemon/product?q=${encodeURIComponent(searchText)}`;
-    return json({ marketPrice: null, priceLabel: null, tcgUrl: searchUrl });
+    let list = [];
+    // Number + set alone is the most reliable match — it doesn't depend on
+    // getting the card's name text exactly right at all.
+    if (!list.length && setQ && numQ) list = await fetchScrydexCards(`number:"${numOnly}"${setQ}`, headers);
+    if (!list.length && setQ && numQ) list = await fetchScrydexCards(nameQ + setQ + numQ, headers);
+    if (!list.length && setQ) list = await fetchScrydexCards(nameQ + setQ, headers);
+    if (!list.length && numQ) list = await fetchScrydexCards(nameQ + numQ, headers);
+    if (!list.length) list = await fetchScrydexCards(nameQ, headers);
+    if (!list.length) {
+      const searchText = [body.name, body.set, numOnly].filter(Boolean).join(' ');
+      const searchUrl = `https://www.tcgplayer.com/search/pokemon/product?q=${encodeURIComponent(searchText)}`;
+      return json({ marketPrice: null, priceLabel: null, tcgUrl: searchUrl });
+    }
+
+    let match = list[0];
+    if (numOnly) {
+      const numMatch = list.find(c => c.number === numOnly);
+      if (numMatch) match = numMatch;
+    }
+
+    // A card can have several print variants (holofoil, reverse holofoil,
+    // etc.), and not all of them carry raw (ungraded) pricing — some only
+    // have graded/population data. Collect raw prices across every variant
+    // instead of committing to the first variant that has *any* price data,
+    // which could be graded-only and dead-end the whole lookup.
+    const variants = match.variants || [];
+    const rawByVariant = variants
+      .map(v => ({
+        name: v.name,
+        raw: (Array.isArray(v.prices) ? v.prices : []).filter(p => p.type === 'raw' && typeof p.market === 'number')
+      }))
+      .filter(v => v.raw.length);
+
+    if (!rawByVariant.length) {
+      const searchText = [body.name, body.set, numOnly].filter(Boolean).join(' ');
+      const searchUrl = `https://www.tcgplayer.com/search/pokemon/product?q=${encodeURIComponent(searchText)}`;
+      return json({ marketPrice: null, priceLabel: null, tcgUrl: searchUrl });
+    }
+
+    // The AI's guessed variant ("holofoil", "reverseHolofoil", "normal") is a
+    // rough hint, not an exact match against Scrydex's more granular variant
+    // names (e.g. "unlimitedHolofoil") — prefer a substring hit that actually
+    // has raw pricing, otherwise fall back to whichever variant does.
+    const hint = body.variant ? String(body.variant).toLowerCase() : null;
+    const picked = (hint && rawByVariant.find(v => v.name && v.name.toLowerCase().includes(hint))) || rawByVariant[0];
+
+    const conditionOrder = ['NM', 'LP', 'MP', 'HP', 'DM'];
+    let chosen = null;
+    for (const cond of conditionOrder) {
+      chosen = picked.raw.find(p => p.condition === cond);
+      if (chosen) break;
+    }
+    if (!chosen) chosen = picked.raw[0];
+
+    const priceLabel = [picked.name, chosen.condition].filter(Boolean).join(' · ');
+    return json({ marketPrice: chosen.market, priceLabel, tcgUrl: null });
+  } catch (err) {
+    return json({ error: `Scrydex lookup failed: ${err.message}` }, 502);
   }
-
-  let match = list[0];
-  if (numOnly) {
-    const numMatch = list.find(c => c.number === numOnly);
-    if (numMatch) match = numMatch;
-  }
-
-  // A card can have several print variants (holofoil, reverse holofoil,
-  // etc.), and not all of them carry raw (ungraded) pricing — some only
-  // have graded/population data. Collect raw prices across every variant
-  // instead of committing to the first variant that has *any* price data,
-  // which could be graded-only and dead-end the whole lookup.
-  const variants = match.variants || [];
-  const rawByVariant = variants
-    .map(v => ({
-      name: v.name,
-      raw: (Array.isArray(v.prices) ? v.prices : []).filter(p => p.type === 'raw' && typeof p.market === 'number')
-    }))
-    .filter(v => v.raw.length);
-
-  if (!rawByVariant.length) {
-    const searchText = [body.name, body.set, numOnly].filter(Boolean).join(' ');
-    const searchUrl = `https://www.tcgplayer.com/search/pokemon/product?q=${encodeURIComponent(searchText)}`;
-    return json({ marketPrice: null, priceLabel: null, tcgUrl: searchUrl });
-  }
-
-  // The AI's guessed variant ("holofoil", "reverseHolofoil", "normal") is a
-  // rough hint, not an exact match against Scrydex's more granular variant
-  // names (e.g. "unlimitedHolofoil") — prefer a substring hit that actually
-  // has raw pricing, otherwise fall back to whichever variant does.
-  const hint = body.variant ? String(body.variant).toLowerCase() : null;
-  const picked = (hint && rawByVariant.find(v => v.name && v.name.toLowerCase().includes(hint))) || rawByVariant[0];
-
-  const conditionOrder = ['NM', 'LP', 'MP', 'HP', 'DM'];
-  let chosen = null;
-  for (const cond of conditionOrder) {
-    chosen = picked.raw.find(p => p.condition === cond);
-    if (chosen) break;
-  }
-  if (!chosen) chosen = picked.raw[0];
-
-  const priceLabel = [picked.name, chosen.condition].filter(Boolean).join(' · ');
-  return json({ marketPrice: chosen.market, priceLabel, tcgUrl: null });
 }
 
 async function fetchScrydexCards(q, headers) {
   const url = `https://api.scrydex.com/pokemon/v1/en/cards?include=prices&page_size=5&q=${encodeURIComponent(q)}`;
   const res = await fetch(url, { headers });
-  if (!res.ok) return [];
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`Scrydex API ${res.status}: ${errText.slice(0, 200)}`);
+  }
   const data = await res.json().catch(() => null);
   return data && data.data ? data.data : [];
 }
