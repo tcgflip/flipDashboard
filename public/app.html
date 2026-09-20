@@ -128,6 +128,11 @@
   }
   .ask-wrap input:focus{ outline:2px solid var(--gold); outline-offset:1px; }
 
+  .ask-detected{
+    font-size:10.5px; color:var(--gold); font-family:'IBM Plex Mono',monospace;
+    background:var(--gold-bg); padding:3px 7px; border-radius:5px; white-space:nowrap;
+  }
+
   .verdict-chip{
     margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:11.5px; font-weight:600;
     padding:4px 9px; border-radius:6px; white-space:nowrap;
@@ -304,6 +309,13 @@ $('scanBtn').addEventListener('click', async () => {
     try {
       const identified = await identifyPhoto(photos[i].file);
       for (const c of identified) {
+        // The model is asked to return a plain number, but parse defensively
+        // in case it slips in a currency symbol or comma despite that.
+        let askingPrice = null;
+        if (c.askingPrice != null) {
+          const parsed = typeof c.askingPrice === 'number' ? c.askingPrice : parseFloat(String(c.askingPrice).replace(/[^0-9.]/g, ''));
+          if (!isNaN(parsed)) askingPrice = parsed;
+        }
         const row = {
           id: 'c' + Math.random().toString(36).slice(2),
           name: c.name, set: c.set, number: c.number, rarity: c.rarity,
@@ -311,7 +323,7 @@ $('scanBtn').addEventListener('click', async () => {
           gradingCompany: c.gradingCompany || null, grade: c.grade || null,
           marketPrice: null, priceLabel: null, tcgUrl: null, sourceLabel: null, imageUrl: null,
           cardId: null, variants: null,
-          askingPrice: null, status: 'pricing'
+          askingPrice, askingPriceDetected: askingPrice != null, status: 'pricing'
         };
         cards.push(row);
         renderResults();
@@ -392,6 +404,7 @@ function rowInnerHTML(card) {
             <span>$</span>
             <input type="number" placeholder="asking" step="0.01" min="0" data-id="${card.id}" class="askInput" value="${card.askingPrice ?? ''}">
           </div>
+          ${card.askingPriceDetected ? '<span class="ask-detected" title="Auto-filled from a price tag detected in the photo">from tag</span>' : ''}
           <span class="verdict-chip">${chip}</span>
         </div>
         ${card.variants && card.variants.length > 1 ? `
@@ -415,6 +428,11 @@ function bindRowEvents(rowEl, card) {
     const { cls, chip } = verdictFor(card);
     rowEl.className = cls;
     rowEl.querySelector('.verdict-chip').textContent = chip;
+    if (card.askingPriceDetected) {
+      card.askingPriceDetected = false;
+      const badge = rowEl.querySelector('.ask-detected');
+      if (badge) badge.remove();
+    }
     updateSummary();
   });
   rowEl.querySelector('.rm-row').addEventListener('click', () => {

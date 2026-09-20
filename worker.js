@@ -45,18 +45,24 @@ export default {
 // ---- Binder Scan: card identification (Claude vision) ----
 
 const IDENTIFY_PROMPT =
-  'This photo shows one or more Pokémon cards (a binder page, a stack, a table spread, or graded ' +
-  'cards sealed in hard plastic slabs). Identify EVERY distinct card you can see. Reply with ONLY a ' +
-  'JSON array, no other text, each item shaped exactly like: {"name": string, "set": string or null, ' +
-  '"number": string or null, "rarity": string or null, "variant": "holofoil" or "reverseHolofoil" or ' +
-  '"normal" or null, "language": "en" or "ja", "gradingCompany": "PSA" or "BGS" or "CGC" or "SGC" or ' +
-  '"TAG" or null, "grade": string or null, "confidence": "high" or "medium" or "low"}. ' +
+  'This photo shows one or more Pokémon cards (a binder page, a stack, a table spread, graded cards ' +
+  'sealed in hard plastic slabs, or cards in a vendor\'s display case with price tags). Identify EVERY ' +
+  'distinct card you can see. Reply with ONLY a JSON array, no other text, each item shaped exactly ' +
+  'like: {"name": string, "set": string or null, "number": string or null, "rarity": string or null, ' +
+  '"variant": "holofoil" or "reverseHolofoil" or "normal" or null, "language": "en" or "ja", ' +
+  '"gradingCompany": "PSA" or "BGS" or "CGC" or "SGC" or "TAG" or null, "grade": string or null, ' +
+  '"askingPrice": number or null, "confidence": "high" or "medium" or "low"}. ' +
   'If a card is printed in Japanese, set "language" to "ja" and give "name" and "set" exactly as ' +
   'printed on the card in Japanese (do not translate them to English) — the pricing database indexes ' +
   'Japanese cards by their original Japanese text, not an English translation. Otherwise "language" is "en". ' +
   'If a card is a graded slab (sealed in a hard plastic holder with a printed grading label), read the ' +
   'grading company and the numeric grade off that label exactly (e.g. company "PSA", grade "10" or ' +
   '"9.5") and set "gradingCompany"/"grade" accordingly; for a raw, ungraded card leave both null. ' +
+  'If there is a price tag, sticker, or handwritten label showing an asking price attached to or ' +
+  'directly next to a specific card (e.g. a vendor\'s display case or binder with prices marked), set ' +
+  '"askingPrice" to that price as a plain number with no currency symbol or commas (e.g. 24.99). Only ' +
+  'attach a price to a card when it is clearly associated with that specific card, not a shelf/case-wide ' +
+  'price with no clear card association; otherwise leave "askingPrice" null. ' +
   'If you cannot make out a card at all, omit it rather than guessing wildly.';
 
 async function handleIdentify(request, env) {
