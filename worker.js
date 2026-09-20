@@ -121,6 +121,13 @@ async function handleLookupPrice(request, env) {
     return (img && (img.small || img.medium || img.large)) || null;
   };
 
+  // A TCGplayer search link, so the reported price is always one click away
+  // from being checked against real listings rather than taken on faith.
+  const tcgSearchUrl = (name, setName, number, language) => {
+    const searchText = [name, setName, number].filter(Boolean).join(' ');
+    return `https://www.tcgplayer.com/search/pokemon/product?q=${encodeURIComponent(searchText)}${language === 'ja' ? '&Language=Japanese' : ''}`;
+  };
+
   // The list of print variants on a matched card (Master Ball, reverse
   // holofoil, etc.), with which ones actually have raw pricing — used both
   // to auto-pick a variant and to let the UI offer a manual picker when the
@@ -156,7 +163,8 @@ async function handleLookupPrice(request, env) {
       return json({
         marketPrice: result ? result.market : null,
         priceLabel: result ? [body.variant, result.condition].filter(Boolean).join(' · ') : null,
-        tcgUrl: null, exactMatch: true, imageUrl: imageUrl(card),
+        tcgUrl: tcgSearchUrl(card.name, card.expansion && card.expansion.name, card.number, lang),
+        exactMatch: true, imageUrl: imageUrl(card),
         cardId: card.id, variants: variantList(card), selectedVariant: body.variant, language: lang
       });
     }
@@ -178,9 +186,7 @@ async function handleLookupPrice(request, env) {
     if (!list.length && numQ) list = await fetchScrydexCards(nameQ + numQ, headers, 5, lang);
     if (!list.length) list = await fetchScrydexCards(nameQ, headers, 10, lang);
     if (!list.length) {
-      const searchText = [body.name, body.set, numOnly].filter(Boolean).join(' ');
-      const searchUrl = `https://www.tcgplayer.com/search/pokemon/product?q=${encodeURIComponent(searchText)}${lang === 'ja' ? '&Language=Japanese' : ''}`;
-      return json({ marketPrice: null, priceLabel: null, tcgUrl: searchUrl });
+      return json({ marketPrice: null, priceLabel: null, tcgUrl: tcgSearchUrl(body.name, body.set, numOnly, lang) });
     }
 
     // If a card number was read, prefer candidates that actually match it —
@@ -214,11 +220,11 @@ async function handleLookupPrice(request, env) {
     }
 
     if (!pickedVariant) {
-      const searchText = [body.name, body.set, numOnly].filter(Boolean).join(' ');
-      const searchUrl = `https://www.tcgplayer.com/search/pokemon/product?q=${encodeURIComponent(searchText)}${lang === 'ja' ? '&Language=Japanese' : ''}`;
       const fallbackCard = candidates[0];
       return json({
-        marketPrice: null, priceLabel: null, tcgUrl: searchUrl, imageUrl: imageUrl(fallbackCard),
+        marketPrice: null, priceLabel: null,
+        tcgUrl: tcgSearchUrl(fallbackCard.name, fallbackCard.expansion && fallbackCard.expansion.name, fallbackCard.number, lang),
+        imageUrl: imageUrl(fallbackCard),
         cardId: fallbackCard.id, variants: variantList(fallbackCard), language: lang
       });
     }
@@ -226,7 +232,9 @@ async function handleLookupPrice(request, env) {
     const result = priceForVariant(pickedVariant);
     const priceLabel = [pickedVariant.name, result.condition].filter(Boolean).join(' · ');
     return json({
-      marketPrice: result.market, priceLabel, tcgUrl: null, exactMatch, imageUrl: imageUrl(matchedCard),
+      marketPrice: result.market, priceLabel,
+      tcgUrl: tcgSearchUrl(matchedCard.name, matchedCard.expansion && matchedCard.expansion.name, matchedCard.number, lang),
+      exactMatch, imageUrl: imageUrl(matchedCard),
       cardId: matchedCard.id, variants: variantList(matchedCard), selectedVariant: pickedVariant.name, language: lang
     });
   } catch (err) {
