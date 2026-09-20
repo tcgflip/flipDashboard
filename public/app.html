@@ -278,7 +278,7 @@ async function lookupPrice(card) {
   const res = await fetch('/api/lookup-price', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: card.name, set: card.set, number: card.number, variant: card.variant, cardId: card.cardId })
+    body: JSON.stringify({ name: card.name, set: card.set, number: card.number, variant: card.variant, cardId: card.cardId, language: card.language })
   });
   if (!requireSession(res)) throw new Error('Signed out');
   if (!res.ok) {
@@ -304,7 +304,7 @@ $('scanBtn').addEventListener('click', async () => {
         const row = {
           id: 'c' + Math.random().toString(36).slice(2),
           name: c.name, set: c.set, number: c.number, rarity: c.rarity,
-          variant: c.variant, confidence: c.confidence,
+          variant: c.variant, confidence: c.confidence, language: c.language,
           marketPrice: null, priceLabel: null, tcgUrl: null, imageUrl: null,
           cardId: null, variants: null,
           askingPrice: null, status: 'pricing'
@@ -320,6 +320,7 @@ $('scanBtn').addEventListener('click', async () => {
             row.exactMatch = priceInfo.exactMatch !== false;
             row.cardId = priceInfo.cardId || null;
             row.variants = priceInfo.variants || null;
+            if (priceInfo.language) row.language = priceInfo.language;
             if (priceInfo.selectedVariant) row.variant = priceInfo.selectedVariant;
           }
           row.status = 'priced';
