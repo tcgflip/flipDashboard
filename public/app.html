@@ -278,7 +278,10 @@ async function lookupPrice(card) {
   const res = await fetch('/api/lookup-price', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: card.name, set: card.set, number: card.number, variant: card.variant, cardId: card.cardId, language: card.language })
+    body: JSON.stringify({
+      name: card.name, set: card.set, number: card.number, variant: card.variant, cardId: card.cardId,
+      language: card.language, gradingCompany: card.gradingCompany, grade: card.grade
+    })
   });
   if (!requireSession(res)) throw new Error('Signed out');
   if (!res.ok) {
@@ -305,7 +308,8 @@ $('scanBtn').addEventListener('click', async () => {
           id: 'c' + Math.random().toString(36).slice(2),
           name: c.name, set: c.set, number: c.number, rarity: c.rarity,
           variant: c.variant, confidence: c.confidence, language: c.language,
-          marketPrice: null, priceLabel: null, tcgUrl: null, imageUrl: null,
+          gradingCompany: c.gradingCompany || null, grade: c.grade || null,
+          marketPrice: null, priceLabel: null, tcgUrl: null, sourceLabel: null, imageUrl: null,
           cardId: null, variants: null,
           askingPrice: null, status: 'pricing'
         };
@@ -316,6 +320,7 @@ $('scanBtn').addEventListener('click', async () => {
             row.marketPrice = priceInfo.marketPrice;
             row.priceLabel = priceInfo.priceLabel;
             row.tcgUrl = priceInfo.tcgUrl;
+            row.sourceLabel = priceInfo.sourceLabel || null;
             row.imageUrl = priceInfo.imageUrl || null;
             row.exactMatch = priceInfo.exactMatch !== false;
             row.cardId = priceInfo.cardId || null;
@@ -357,6 +362,7 @@ function verdictFor(card) {
 
 function rowInnerHTML(card) {
   const metaParts = [card.set, card.number ? '#' + card.number : null, card.rarity].filter(Boolean);
+  if (card.gradingCompany && card.grade) metaParts.unshift(`${card.gradingCompany} ${card.grade}`);
   if (card.confidence === 'low') metaParts.push('low confidence');
 
   const priceHtml = card.status === 'priced' && card.marketPrice != null
@@ -376,7 +382,7 @@ function rowInnerHTML(card) {
         <div class="top">
           <div>
             <p class="name">${card.name}</p>
-            <p class="meta">${metaParts.join(' · ') || '—'}${card.tcgUrl ? ' · <a class="tcg-link" href="' + card.tcgUrl + '" target="_blank" rel="noopener">Verify on TCGplayer ↗</a>' : ''}</p>
+            <p class="meta">${metaParts.join(' · ') || '—'}${card.tcgUrl ? ' · <a class="tcg-link" href="' + card.tcgUrl + '" target="_blank" rel="noopener">Verify on ' + (card.sourceLabel || 'TCGplayer') + ' ↗</a>' : ''}</p>
           </div>
           <button class="rm-row" data-id="${card.id}">×</button>
         </div>
@@ -437,6 +443,7 @@ async function changeVariant(card, newVariant) {
       card.marketPrice = priceInfo.marketPrice;
       card.priceLabel = priceInfo.priceLabel;
       card.tcgUrl = priceInfo.tcgUrl;
+      card.sourceLabel = priceInfo.sourceLabel || card.sourceLabel;
       card.imageUrl = priceInfo.imageUrl || card.imageUrl;
       card.exactMatch = priceInfo.exactMatch !== false;
       card.cardId = priceInfo.cardId || card.cardId;
