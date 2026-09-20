@@ -134,6 +134,11 @@ async function handleLookupPrice(request, env) {
       return json({ marketPrice: null, priceLabel: null, tcgUrl: searchUrl });
     }
 
+    const imageUrl = (card) => {
+      const img = card && card.images && card.images[0];
+      return (img && (img.small || img.medium || img.large)) || null;
+    };
+
     // If a card number was read, prefer candidates that actually match it —
     // but without one (common when the number wasn't legible in the photo),
     // a plain name search can return several unrelated printings, and the
@@ -155,6 +160,7 @@ async function handleLookupPrice(request, env) {
     // further down the list does.
     const hint = body.variant ? String(body.variant).toLowerCase() : null;
     let picked = null;
+    let matchedCard = null;
     for (const candidate of candidates) {
       const variants = candidate.variants || [];
       const rawByVariant = variants
@@ -165,13 +171,14 @@ async function handleLookupPrice(request, env) {
         .filter(v => v.raw.length);
       if (!rawByVariant.length) continue;
       picked = (hint && rawByVariant.find(v => v.name && v.name.toLowerCase().includes(hint))) || rawByVariant[0];
+      matchedCard = candidate;
       break;
     }
 
     if (!picked) {
       const searchText = [body.name, body.set, numOnly].filter(Boolean).join(' ');
       const searchUrl = `https://www.tcgplayer.com/search/pokemon/product?q=${encodeURIComponent(searchText)}`;
-      return json({ marketPrice: null, priceLabel: null, tcgUrl: searchUrl });
+      return json({ marketPrice: null, priceLabel: null, tcgUrl: searchUrl, imageUrl: imageUrl(candidates[0]) });
     }
 
     const conditionOrder = ['NM', 'LP', 'MP', 'HP', 'DM'];
@@ -183,7 +190,7 @@ async function handleLookupPrice(request, env) {
     if (!chosen) chosen = picked.raw[0];
 
     const priceLabel = [picked.name, chosen.condition].filter(Boolean).join(' · ');
-    return json({ marketPrice: chosen.market, priceLabel, tcgUrl: null, exactMatch });
+    return json({ marketPrice: chosen.market, priceLabel, tcgUrl: null, exactMatch, imageUrl: imageUrl(matchedCard) });
   } catch (err) {
     return json({ error: `Scrydex lookup failed: ${err.message}` }, 502);
   }

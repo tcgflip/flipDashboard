@@ -102,6 +102,14 @@
     background:var(--panel); border:1px solid var(--line-strong); border-radius:12px;
     padding:13px 14px; margin-bottom:10px;
   }
+  .row-body{ display:flex; gap:12px; align-items:flex-start; }
+  .card-thumb{
+    width:52px; height:72px; flex-shrink:0; border-radius:6px; background:var(--panel-2);
+    border:1px solid var(--line-strong); overflow:hidden;
+  }
+  .card-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .row-content{ flex:1; min-width:0; }
+
   .row .top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:8px; }
   .row .name{ font-size:14.5px; font-weight:600; margin:0; }
   .row .meta{ font-size:11.5px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace; margin:2px 0 0; }
@@ -289,7 +297,7 @@ $('scanBtn').addEventListener('click', async () => {
           id: 'c' + Math.random().toString(36).slice(2),
           name: c.name, set: c.set, number: c.number, rarity: c.rarity,
           variant: c.variant, confidence: c.confidence,
-          marketPrice: null, priceLabel: null, tcgUrl: null,
+          marketPrice: null, priceLabel: null, tcgUrl: null, imageUrl: null,
           askingPrice: null, status: 'pricing'
         };
         cards.push(row);
@@ -299,6 +307,7 @@ $('scanBtn').addEventListener('click', async () => {
             row.marketPrice = priceInfo.marketPrice;
             row.priceLabel = priceInfo.priceLabel;
             row.tcgUrl = priceInfo.tcgUrl;
+            row.imageUrl = priceInfo.imageUrl || null;
             row.exactMatch = priceInfo.exactMatch !== false;
           }
           row.status = 'priced';
@@ -348,20 +357,25 @@ function rowInnerHTML(card) {
   const { chip } = verdictFor(card);
 
   return `
-    <div class="top">
-      <div>
-        <p class="name">${card.name}</p>
-        <p class="meta">${metaParts.join(' · ') || '—'}${card.tcgUrl ? ' · <a class="tcg-link" href="' + card.tcgUrl + '" target="_blank" rel="noopener">TCGplayer ↗</a>' : ''}</p>
+    <div class="row-body">
+      <div class="card-thumb">${card.imageUrl ? `<img src="${card.imageUrl}" alt="" onerror="this.remove()">` : ''}</div>
+      <div class="row-content">
+        <div class="top">
+          <div>
+            <p class="name">${card.name}</p>
+            <p class="meta">${metaParts.join(' · ') || '—'}${card.tcgUrl ? ' · <a class="tcg-link" href="' + card.tcgUrl + '" target="_blank" rel="noopener">TCGplayer ↗</a>' : ''}</p>
+          </div>
+          <button class="rm-row" data-id="${card.id}">×</button>
+        </div>
+        <div class="price-line">
+          ${priceHtml}
+          <div class="ask-wrap">
+            <span>$</span>
+            <input type="number" placeholder="asking" step="0.01" min="0" data-id="${card.id}" class="askInput" value="${card.askingPrice ?? ''}">
+          </div>
+          <span class="verdict-chip">${chip}</span>
+        </div>
       </div>
-      <button class="rm-row" data-id="${card.id}">×</button>
-    </div>
-    <div class="price-line">
-      ${priceHtml}
-      <div class="ask-wrap">
-        <span>$</span>
-        <input type="number" placeholder="asking" step="0.01" min="0" data-id="${card.id}" class="askInput" value="${card.askingPrice ?? ''}">
-      </div>
-      <span class="verdict-chip">${chip}</span>
     </div>
   `;
 }
