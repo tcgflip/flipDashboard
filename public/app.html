@@ -276,7 +276,6 @@ async function lookupPrice(card) {
 $('scanBtn').addEventListener('click', async () => {
   if (queuedPhotos.length === 0) return;
   $('scanBtn').disabled = true;
-  $('emptyState').style.display = 'none';
   const photos = [...queuedPhotos];
   queuedPhotos = [];
   renderQueue();
