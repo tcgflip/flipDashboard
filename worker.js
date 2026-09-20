@@ -140,6 +140,12 @@ async function handleLookupPrice(request, env) {
     // first one isn't necessarily the one with usable pricing.
     const numMatches = numOnly ? list.filter(c => c.number === numOnly) : [];
     const candidates = numMatches.length ? numMatches : list;
+    // A number+name match pins down the exact printing. Without one, we're
+    // walking unrelated candidates hoping one has pricing — that can land
+    // on the wrong printing entirely (e.g. a common reprint instead of the
+    // actual valuable card), so that result has to be flagged as unverified
+    // rather than shown with the same confidence as a pinned match.
+    const exactMatch = numMatches.length > 0;
 
     // A card can have several print variants (holofoil, reverse holofoil,
     // etc.), and not all of them carry raw (ungraded) pricing — some only
@@ -177,7 +183,7 @@ async function handleLookupPrice(request, env) {
     if (!chosen) chosen = picked.raw[0];
 
     const priceLabel = [picked.name, chosen.condition].filter(Boolean).join(' · ');
-    return json({ marketPrice: chosen.market, priceLabel, tcgUrl: null });
+    return json({ marketPrice: chosen.market, priceLabel, tcgUrl: null, exactMatch });
   } catch (err) {
     return json({ error: `Scrydex lookup failed: ${err.message}` }, 502);
   }

@@ -300,6 +300,7 @@ $('scanBtn').addEventListener('click', async () => {
             row.marketPrice = priceInfo.marketPrice;
             row.priceLabel = priceInfo.priceLabel;
             row.tcgUrl = priceInfo.tcgUrl;
+            row.exactMatch = priceInfo.exactMatch !== false;
           }
           row.status = 'priced';
           refreshRow(row);
@@ -323,6 +324,7 @@ function verdictFor(card) {
   if (card.status === 'price-failed') return { cls: 'row pending', chip: 'Lookup failed' };
   if (card.status !== 'priced') return { cls: 'row pending', chip: 'Pricing…' };
   if (card.marketPrice == null) return { cls: 'row pending', chip: 'No price found' };
+  if (card.exactMatch === false) return { cls: 'row mid', chip: 'Verify match' };
   if (card.askingPrice != null && card.askingPrice > 0) {
     const margin = ((card.marketPrice - card.askingPrice) / card.askingPrice) * 100;
     if (margin >= 30) return { cls: 'row good', chip: `+${margin.toFixed(0)}% margin` };
@@ -337,7 +339,7 @@ function rowInnerHTML(card) {
   if (card.confidence === 'low') metaParts.push('low confidence');
 
   const priceHtml = card.status === 'priced' && card.marketPrice != null
-    ? `<span class="market">Market <strong>${fmt(card.marketPrice)}</strong>${card.priceLabel ? ' <span style="opacity:.6">(' + card.priceLabel + ')</span>' : ''}</span>`
+    ? `<span class="market">Market <strong>${fmt(card.marketPrice)}</strong>${card.priceLabel ? ' <span style="opacity:.6">(' + card.priceLabel + ')</span>' : ''}${card.exactMatch === false ? ' <span style="color:#FF6452">⚠ unverified — check card matches exactly</span>' : ''}</span>`
     : card.status === 'price-failed'
       ? `<span class="no-price">Couldn't fetch price${card.priceError ? ' (' + card.priceError + ')' : ''}</span>`
       : card.status === 'priced'
