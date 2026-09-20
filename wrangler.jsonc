@@ -11,7 +11,7 @@
   ],
   "vars": {
     "GOOGLE_CLIENT_ID": "671138852946-jlqno5f0ck4vfdd8tevg84vaiq2brsis.apps.googleusercontent.com",
-    "ALLOWED_EMAILS": "tcgflip@gmail.com,tgwmartin@gmail.com",
+    "ALLOWED_EMAILS": "tcgflip@gmail.com,tgwmartin@gmail.com,sjrasay@gmail.com",
     "OAUTH_REDIRECT_URI": "https://flipdashboard.tcgflip.workers.dev/api/auth/callback",
     "Scrydex_Team_ID": "flippy"
   }
