@@ -131,7 +131,11 @@ async function handleLookupPrice(request, env) {
   const isGraded = !!(body.gradingCompany && body.grade);
 
   const imageUrl = (card) => {
-    const img = card && card.images && card.images[0];
+    const images = (card && card.images) || [];
+    // Prefer the explicitly-typed front image -- images[0] isn't
+    // guaranteed to be the front, and showing a card's back is worse
+    // than showing nothing.
+    const img = images.find(i => i.type === 'front') || images[0];
     return (img && (img.small || img.medium || img.large)) || null;
   };
 
