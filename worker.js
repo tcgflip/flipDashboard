@@ -111,7 +111,51 @@ async function handleLookupPrice(request, env) {
   }
   const headers = { 'X-Api-Key': env.SCRYDEX_API_KEY, 'X-Team-ID': env.Scrydex_Team_ID };
 
+  const imageUrl = (card) => {
+    const img = card && card.images && card.images[0];
+    return (img && (img.small || img.medium || img.large)) || null;
+  };
+
+  // The list of print variants on a matched card (Master Ball, reverse
+  // holofoil, etc.), with which ones actually have raw pricing — used both
+  // to auto-pick a variant and to let the UI offer a manual picker when the
+  // AI's guessed variant was wrong.
+  const variantList = (card) => (card && card.variants || []).map(v => ({
+    name: v.name,
+    hasPrice: (Array.isArray(v.prices) ? v.prices : []).some(p => p.type === 'raw' && typeof p.market === 'number')
+  }));
+
+  const priceForVariant = (variant) => {
+    const raw = (variant && Array.isArray(variant.prices) ? variant.prices : []).filter(p => p.type === 'raw' && typeof p.market === 'number');
+    if (!raw.length) return null;
+    const conditionOrder = ['NM', 'LP', 'MP', 'HP', 'DM'];
+    let chosen = null;
+    for (const cond of conditionOrder) {
+      chosen = raw.find(p => p.condition === cond);
+      if (chosen) break;
+    }
+    if (!chosen) chosen = raw[0];
+    return { market: chosen.market, condition: chosen.condition };
+  };
+
   try {
+    // A manual re-lookup for a specific variant on a card we've already
+    // identified — goes straight to the card by its Scrydex id instead of
+    // re-running the whole search, since we already know exactly which
+    // printing this is; the user is just correcting which variant it is.
+    if (body.cardId && body.variant) {
+      const card = await fetchScrydexCardById(body.cardId, headers);
+      if (!card) return json({ marketPrice: null, priceLabel: null, tcgUrl: null });
+      const variant = (card.variants || []).find(v => v.name === body.variant);
+      const result = priceForVariant(variant);
+      return json({
+        marketPrice: result ? result.market : null,
+        priceLabel: result ? [body.variant, result.condition].filter(Boolean).join(' · ') : null,
+        tcgUrl: null, exactMatch: true, imageUrl: imageUrl(card),
+        cardId: card.id, variants: variantList(card), selectedVariant: body.variant
+      });
+    }
+
     // A card read off a photo often carries the full printed fraction, e.g.
     // "201/165" — Scrydex's `number` field is only ever the local number
     // ("201"), never the set total, so that has to be stripped first.
@@ -134,11 +178,6 @@ async function handleLookupPrice(request, env) {
       return json({ marketPrice: null, priceLabel: null, tcgUrl: searchUrl });
     }
 
-    const imageUrl = (card) => {
-      const img = card && card.images && card.images[0];
-      return (img && (img.small || img.medium || img.large)) || null;
-    };
-
     // If a card number was read, prefer candidates that actually match it —
     // but without one (common when the number wasn't legible in the photo),
     // a plain name search can return several unrelated printings, and the
@@ -153,44 +192,38 @@ async function handleLookupPrice(request, env) {
     const exactMatch = numMatches.length > 0;
 
     // A card can have several print variants (holofoil, reverse holofoil,
-    // etc.), and not all of them carry raw (ungraded) pricing — some only
-    // have graded/population data. Check every candidate printing (and
-    // every variant on each) instead of committing to the first one, which
-    // could turn out to have no raw pricing at all while another candidate
-    // further down the list does.
+    // Master Ball, etc.), and not all of them carry raw (ungraded) pricing —
+    // some only have graded/population data. Check every candidate printing
+    // (and every variant on each) instead of committing to the first one,
+    // which could turn out to have no raw pricing at all while another
+    // candidate further down the list does.
     const hint = body.variant ? String(body.variant).toLowerCase() : null;
-    let picked = null;
+    let pickedVariant = null;
     let matchedCard = null;
     for (const candidate of candidates) {
-      const variants = candidate.variants || [];
-      const rawByVariant = variants
-        .map(v => ({
-          name: v.name,
-          raw: (Array.isArray(v.prices) ? v.prices : []).filter(p => p.type === 'raw' && typeof p.market === 'number')
-        }))
-        .filter(v => v.raw.length);
-      if (!rawByVariant.length) continue;
-      picked = (hint && rawByVariant.find(v => v.name && v.name.toLowerCase().includes(hint))) || rawByVariant[0];
+      const priced = (candidate.variants || []).filter(v => priceForVariant(v));
+      if (!priced.length) continue;
+      pickedVariant = (hint && priced.find(v => v.name && v.name.toLowerCase().includes(hint))) || priced[0];
       matchedCard = candidate;
       break;
     }
 
-    if (!picked) {
+    if (!pickedVariant) {
       const searchText = [body.name, body.set, numOnly].filter(Boolean).join(' ');
       const searchUrl = `https://www.tcgplayer.com/search/pokemon/product?q=${encodeURIComponent(searchText)}`;
-      return json({ marketPrice: null, priceLabel: null, tcgUrl: searchUrl, imageUrl: imageUrl(candidates[0]) });
+      const fallbackCard = candidates[0];
+      return json({
+        marketPrice: null, priceLabel: null, tcgUrl: searchUrl, imageUrl: imageUrl(fallbackCard),
+        cardId: fallbackCard.id, variants: variantList(fallbackCard)
+      });
     }
 
-    const conditionOrder = ['NM', 'LP', 'MP', 'HP', 'DM'];
-    let chosen = null;
-    for (const cond of conditionOrder) {
-      chosen = picked.raw.find(p => p.condition === cond);
-      if (chosen) break;
-    }
-    if (!chosen) chosen = picked.raw[0];
-
-    const priceLabel = [picked.name, chosen.condition].filter(Boolean).join(' · ');
-    return json({ marketPrice: chosen.market, priceLabel, tcgUrl: null, exactMatch, imageUrl: imageUrl(matchedCard) });
+    const result = priceForVariant(pickedVariant);
+    const priceLabel = [pickedVariant.name, result.condition].filter(Boolean).join(' · ');
+    return json({
+      marketPrice: result.market, priceLabel, tcgUrl: null, exactMatch, imageUrl: imageUrl(matchedCard),
+      cardId: matchedCard.id, variants: variantList(matchedCard), selectedVariant: pickedVariant.name
+    });
   } catch (err) {
     return json({ error: `Scrydex lookup failed: ${err.message}` }, 502);
   }
@@ -205,6 +238,17 @@ async function fetchScrydexCards(q, headers, pageSize = 5) {
   }
   const data = await res.json().catch(() => null);
   return data && data.data ? data.data : [];
+}
+
+async function fetchScrydexCardById(id, headers) {
+  const url = `https://api.scrydex.com/pokemon/v1/en/cards/${encodeURIComponent(id)}?include=prices`;
+  const res = await fetch(url, { headers });
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`Scrydex API ${res.status}: ${errText.slice(0, 200)}`);
+  }
+  const data = await res.json().catch(() => null);
+  return data && data.data ? data.data : null;
 }
 
 // ---- Google OAuth ----
