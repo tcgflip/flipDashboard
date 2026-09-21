@@ -209,20 +209,33 @@ async function handleLookupPrice(request, env) {
 
     // A card read off a photo often carries the full printed fraction, e.g.
     // "201/165" — Scrydex's `number` field is only ever the local number
-    // ("201"), never the set total, so that has to be stripped first.
-    const numOnly = body.number ? String(body.number).split('/')[0].trim().replace(/^0+(?=\d)/, '') : null;
+    // ("201"), never the set total, so that has to be stripped first. A
+    // rarity symbol next to the number (e.g. a star icon) can also get
+    // glued onto the transcription, so pull out just the alphanumeric run.
+    const rawNum = body.number ? String(body.number).split('/')[0].trim() : null;
+    const numOnly = rawNum ? (rawNum.match(/[A-Za-z]*\d+/) || [rawNum])[0].replace(/^0+(?=\d)/, '') : null;
     const setQ = body.set ? ` expansion.name:"${body.set}"` : '';
     const numQ = numOnly ? ` number:"${numOnly}"` : '';
-    const nameQ = `name:"${body.name}"`;
+
+    // GX/EX/V/VMAX/VSTAR cards are commonly stored with a hyphen before the
+    // suffix (e.g. "Mewtwo-GX"), but a name read off a photo naturally comes
+    // back with a space ("Mewtwo GX") — try both forms.
+    const nameHyphen = body.name.replace(/\s+(GX|EX|VMAX|VSTAR|V)\b/gi, '-$1');
+    const names = nameHyphen !== body.name ? [body.name, nameHyphen] : [body.name];
 
     let list = [];
     // Number + set alone is the most reliable match — it doesn't depend on
-    // getting the card's name text exactly right at all.
+    // getting the card's name text exactly right (or its set) at all.
     if (!list.length && setQ && numQ) list = await fetchScrydexCards(`number:"${numOnly}"${setQ}`, headers, 5, lang);
-    if (!list.length && setQ && numQ) list = await fetchScrydexCards(nameQ + setQ + numQ, headers, 5, lang);
-    if (!list.length && setQ) list = await fetchScrydexCards(nameQ + setQ, headers, 5, lang);
-    if (!list.length && numQ) list = await fetchScrydexCards(nameQ + numQ, headers, 5, lang);
-    if (!list.length) list = await fetchScrydexCards(nameQ, headers, 10, lang);
+    for (const n of names) {
+      const nameQ = `name:"${n}"`;
+      if (!list.length && setQ && numQ) list = await fetchScrydexCards(nameQ + setQ + numQ, headers, 5, lang);
+      if (!list.length && setQ) list = await fetchScrydexCards(nameQ + setQ, headers, 5, lang);
+      // A wrong set guess (small SM-era set symbols look alike) shouldn't
+      // sink the whole lookup — name+number alone ignores it entirely.
+      if (!list.length && numQ) list = await fetchScrydexCards(nameQ + numQ, headers, 5, lang);
+      if (!list.length) list = await fetchScrydexCards(nameQ, headers, 10, lang);
+    }
     if (!list.length) {
       return json({ marketPrice: null, priceLabel: null, tcgUrl: sourceUrl(body.name, body.set, numOnly), sourceLabel });
     }
