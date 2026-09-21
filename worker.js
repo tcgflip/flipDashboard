@@ -223,10 +223,26 @@ async function handleLookupPrice(request, env) {
     const nameHyphen = body.name.replace(/\s+(GX|EX|VMAX|VSTAR|V)\b/gi, '-$1');
     const names = nameHyphen !== body.name ? [body.name, nameHyphen] : [body.name];
 
+    // A loose sanity check for the one query below that has no name filter
+    // at all (number+set). The vision model can be confidently wrong about
+    // a card's set (small SM-era set symbols look alike), and without this
+    // check that query would happily return a totally unrelated card that
+    // just happens to share a number with the wrong set -- silently.
+    const namesRoughlyMatch = (a, b) => {
+      const norm = s => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+      const na = norm(a), nb = norm(b);
+      return !!na && !!nb && (na.includes(nb) || nb.includes(na));
+    };
+
     let list = [];
-    // Number + set alone is the most reliable match — it doesn't depend on
-    // getting the card's name text exactly right (or its set) at all.
-    if (!list.length && setQ && numQ) list = await fetchScrydexCards(`number:"${numOnly}"${setQ}`, headers, 5, lang);
+    // Number + set alone is normally the most reliable match, since it
+    // doesn't depend on getting the card's name text exactly right -- but
+    // only once it's verified against the name too, since it's otherwise
+    // trusting the set guess completely blind.
+    if (!list.length && setQ && numQ) {
+      const byNumSet = await fetchScrydexCards(`number:"${numOnly}"${setQ}`, headers, 5, lang);
+      if (byNumSet.some(c => namesRoughlyMatch(c.name, body.name))) list = byNumSet;
+    }
     for (const n of names) {
       const nameQ = `name:"${n}"`;
       if (!list.length && setQ && numQ) list = await fetchScrydexCards(nameQ + setQ + numQ, headers, 5, lang);
