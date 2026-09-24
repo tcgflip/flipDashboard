@@ -60,8 +60,9 @@
     margin:0 0 12px; text-transform:uppercase; letter-spacing:0.04em;
   }
 
+  .file-btn-row{ display:flex; gap:10px; }
   .file-btn{
-    display:flex; align-items:center; justify-content:center; gap:8px;
+    flex:1; display:flex; align-items:center; justify-content:center; gap:8px;
     background:var(--panel-2); border:1px dashed var(--line-strong); border-radius:10px;
     color:var(--text); font-size:14px; font-weight:500; padding:18px; cursor:pointer; position:relative;
   }
@@ -185,10 +186,16 @@
 
     <div class="card">
       <p class="card-label">1 · Add photos</p>
-      <label class="file-btn" for="photoInput">
-        <span>📷 Add a binder page photo</span>
-        <input type="file" accept="image/*" capture="environment" id="photoInput">
-      </label>
+      <div class="file-btn-row">
+        <label class="file-btn" for="photoInput">
+          <span>📷 Take a photo</span>
+          <input type="file" accept="image/*" capture="environment" id="photoInput">
+        </label>
+        <label class="file-btn" for="uploadInput">
+          <span>🖼️ Upload</span>
+          <input type="file" accept="image/*" multiple id="uploadInput">
+        </label>
+      </div>
       <div class="queue" id="queue"></div>
       <button class="primary" id="scanBtn" disabled>Identify &amp; price all photos</button>
       <p class="status-line" id="scanStatus"></p>
@@ -227,14 +234,18 @@ function requireSession(res) {
 }
 
 // ---------- Photo queue ----------
-$('photoInput').addEventListener('change', (e) => {
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
-  queuedPhotos.push({ file, url: URL.createObjectURL(file) });
+function handlePhotoInput(e) {
+  const files = e.target.files;
+  if (!files || !files.length) return;
+  for (const file of files) {
+    queuedPhotos.push({ file, url: URL.createObjectURL(file) });
+  }
   renderQueue();
   updateScanBtnState();
   e.target.value = '';
-});
+}
+$('photoInput').addEventListener('change', handlePhotoInput);
+$('uploadInput').addEventListener('change', handlePhotoInput);
 
 function renderQueue() {
   const q = $('queue');
