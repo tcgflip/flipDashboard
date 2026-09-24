@@ -155,6 +155,9 @@ async function handleLookupPrice(request, env) {
 
   // The price-picking function for the current mode (raw vs. graded), used
   // consistently everywhere a variant needs to be checked for pricing.
+  // A manually-chosen condition (from the condition picker) overrides the
+  // usual best-available cascade, falling back to it if that condition
+  // isn't actually priced for this card.
   const priceForVariant = isGraded
     ? (variant) => {
         const graded = (variant && Array.isArray(variant.prices) ? variant.prices : []).filter(p =>
@@ -164,20 +167,48 @@ async function handleLookupPrice(request, env) {
           typeof p.market === 'number'
         );
         if (!graded.length) return null;
-        return { market: graded[0].market, label: `${graded[0].company} ${graded[0].grade}` };
+        const p = graded[0];
+        return { market: p.market, label: `${p.company} ${p.grade}`, condition: null, trends: p.trends || null };
       }
     : (variant) => {
         const raw = (variant && Array.isArray(variant.prices) ? variant.prices : []).filter(p => p.type === 'raw' && typeof p.market === 'number');
         if (!raw.length) return null;
-        const conditionOrder = ['NM', 'LP', 'MP', 'HP', 'DM'];
+        const conditionOrder = body.condition ? [String(body.condition).toUpperCase()] : ['NM', 'LP', 'MP', 'HP', 'DM'];
         let chosen = null;
         for (const cond of conditionOrder) {
           chosen = raw.find(p => p.condition === cond);
           if (chosen) break;
         }
         if (!chosen) chosen = raw[0];
-        return { market: chosen.market, label: chosen.condition };
+        return { market: chosen.market, label: chosen.condition, condition: chosen.condition, trends: chosen.trends || null };
       };
+
+  // Every raw condition actually priced on a variant, for the condition
+  // picker. Doesn't apply in graded mode -- a slab's condition is baked
+  // into its grade, not a separate raw-condition choice.
+  const conditionList = (variant) => {
+    if (isGraded) return [];
+    return (variant && Array.isArray(variant.prices) ? variant.prices : [])
+      .filter(p => p.type === 'raw' && typeof p.market === 'number')
+      .map(p => ({ condition: p.condition, market: p.market }));
+  };
+
+  // Grading upside for a raw card -- what a PSA 9/10 of this exact printing
+  // is worth, so the grading-arbitrage math (raw price vs. graded value
+  // minus grading cost) doesn't require a second lookup. Not shown when
+  // already scanning a graded slab, since there's no "upside" left to show.
+  const gradingUpside = (variant) => {
+    if (isGraded) return null;
+    const graded = (variant && Array.isArray(variant.prices) ? variant.prices : []).filter(p => p.type === 'graded' && typeof p.market === 'number');
+    if (!graded.length) return null;
+    const pick = (grade) => {
+      const p = graded.find(g => g.company === 'PSA' && String(g.grade) === grade);
+      return p ? p.market : null;
+    };
+    const psa9 = pick('9');
+    const psa10 = pick('10');
+    return (psa9 == null && psa10 == null) ? null : { psa9, psa10 };
+  };
 
   // The list of print variants on a matched card (Master Ball, reverse
   // holofoil, etc.), with which ones actually have pricing in the current
@@ -203,7 +234,9 @@ async function handleLookupPrice(request, env) {
         priceLabel: result ? [body.variant, result.label].filter(Boolean).join(' · ') : null,
         tcgUrl: sourceUrl(card.name, card.expansion && card.expansion.name, card.number), sourceLabel,
         exactMatch: true, imageUrl: imageUrl(card),
-        cardId: card.id, variants: variantList(card), selectedVariant: body.variant, language: lang
+        cardId: card.id, variants: variantList(card), selectedVariant: body.variant, language: lang,
+        conditions: conditionList(variant), selectedCondition: result ? result.condition : null,
+        gradingUpside: gradingUpside(variant), trends: result ? result.trends : null
       });
     }
 
@@ -302,7 +335,9 @@ async function handleLookupPrice(request, env) {
       marketPrice: result.market, priceLabel,
       tcgUrl: sourceUrl(matchedCard.name, matchedCard.expansion && matchedCard.expansion.name, matchedCard.number), sourceLabel,
       exactMatch, imageUrl: imageUrl(matchedCard),
-      cardId: matchedCard.id, variants: variantList(matchedCard), selectedVariant: pickedVariant.name, language: lang
+      cardId: matchedCard.id, variants: variantList(matchedCard), selectedVariant: pickedVariant.name, language: lang,
+      conditions: conditionList(pickedVariant), selectedCondition: result.condition,
+      gradingUpside: gradingUpside(pickedVariant), trends: result.trends
     });
   } catch (err) {
     return json({ error: `Scrydex lookup failed: ${err.message}` }, 502);

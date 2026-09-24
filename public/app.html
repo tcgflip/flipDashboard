@@ -145,6 +145,11 @@
     color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:6px 8px;
   }
   .variant-picker select:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+
+  .grading-upside{
+    font-size:11.5px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace;
+    margin:9px 0 0;
+  }
   .row.pending .verdict-chip{ background:var(--panel-2); color:var(--text-dim); }
   .row.good .verdict-chip{ background:var(--gain-bg); color:var(--gain); }
   .row.mid .verdict-chip{ background:var(--gold-bg); color:var(--gold); }
@@ -285,7 +290,7 @@ async function lookupPrice(card) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       name: card.name, set: card.set, number: card.number, variant: card.variant, cardId: card.cardId,
-      language: card.language, gradingCompany: card.gradingCompany, grade: card.grade
+      language: card.language, gradingCompany: card.gradingCompany, grade: card.grade, condition: card.condition
     })
   });
   if (!requireSession(res)) throw new Error('Signed out');
@@ -322,24 +327,13 @@ $('scanBtn').addEventListener('click', async () => {
           variant: c.variant, confidence: c.confidence, language: c.language,
           gradingCompany: c.gradingCompany || null, grade: c.grade || null,
           marketPrice: null, priceLabel: null, tcgUrl: null, sourceLabel: null, imageUrl: null,
-          cardId: null, variants: null,
+          cardId: null, variants: null, condition: null, conditions: null, gradingUpside: null, trends: null,
           askingPrice, askingPriceDetected: askingPrice != null, status: 'pricing'
         };
         cards.push(row);
         renderResults();
         lookupPrice(row).then(priceInfo => {
-          if (priceInfo) {
-            row.marketPrice = priceInfo.marketPrice;
-            row.priceLabel = priceInfo.priceLabel;
-            row.tcgUrl = priceInfo.tcgUrl;
-            row.sourceLabel = priceInfo.sourceLabel || null;
-            row.imageUrl = priceInfo.imageUrl || null;
-            row.exactMatch = priceInfo.exactMatch !== false;
-            row.cardId = priceInfo.cardId || null;
-            row.variants = priceInfo.variants || null;
-            if (priceInfo.language) row.language = priceInfo.language;
-            if (priceInfo.selectedVariant) row.variant = priceInfo.selectedVariant;
-          }
+          applyPriceInfo(row, priceInfo);
           row.status = 'priced';
           refreshRow(row);
         }).catch((err) => {
@@ -358,6 +352,26 @@ $('scanBtn').addEventListener('click', async () => {
 
 function fmt(n) { return '$' + n.toFixed(2); }
 
+// Applies a /api/lookup-price response onto a card, shared by the initial
+// scan lookup and any manual re-lookup (variant or condition change).
+function applyPriceInfo(card, priceInfo) {
+  if (!priceInfo) return;
+  card.marketPrice = priceInfo.marketPrice;
+  card.priceLabel = priceInfo.priceLabel;
+  card.tcgUrl = priceInfo.tcgUrl;
+  card.sourceLabel = priceInfo.sourceLabel || null;
+  card.imageUrl = priceInfo.imageUrl || card.imageUrl;
+  card.exactMatch = priceInfo.exactMatch !== false;
+  card.cardId = priceInfo.cardId || card.cardId;
+  card.variants = priceInfo.variants || card.variants;
+  card.conditions = priceInfo.conditions || null;
+  card.gradingUpside = priceInfo.gradingUpside || null;
+  card.trends = priceInfo.trends || null;
+  if (priceInfo.language) card.language = priceInfo.language;
+  if (priceInfo.selectedVariant) card.variant = priceInfo.selectedVariant;
+  card.condition = priceInfo.selectedCondition || null;
+}
+
 function verdictFor(card) {
   if (card.status === 'price-failed') return { cls: 'row pending', chip: 'Lookup failed' };
   if (card.status !== 'priced') return { cls: 'row pending', chip: 'Pricing…' };
@@ -372,13 +386,39 @@ function verdictFor(card) {
   return { cls: 'row pending', chip: 'Enter asking price' };
 }
 
+// 7d/30d market movement, straight from Scrydex's own trend data on the
+// selected price entry -- the closest honest substitute to "recent sales"
+// this data source offers (it has no per-transaction sold-listing feed).
+function trendHtml(trends) {
+  if (!trends) return '';
+  const fmtPct = (t) => {
+    if (!t || typeof t.percent_change !== 'number') return null;
+    const sign = t.percent_change > 0 ? '+' : '';
+    const color = t.percent_change > 0 ? 'var(--gain)' : t.percent_change < 0 ? 'var(--coral)' : 'inherit';
+    return `<span style="color:${color}">${sign}${t.percent_change.toFixed(1)}%</span>`;
+  };
+  const parts = [['7d', fmtPct(trends.days_7)], ['30d', fmtPct(trends.days_30)]]
+    .filter(([, v]) => v).map(([label, v]) => `${label} ${v}`);
+  return parts.length ? ` <span style="opacity:.7;font-size:11px">(${parts.join(' · ')})</span>` : '';
+}
+
+// What a PSA 9/10 of this exact raw card is worth, so the "is this worth
+// grading" math doesn't require a separate lookup.
+function gradingUpsideHtml(upside) {
+  if (!upside) return '';
+  const parts = [];
+  if (upside.psa9 != null) parts.push(`PSA 9 ${fmt(upside.psa9)}`);
+  if (upside.psa10 != null) parts.push(`PSA 10 ${fmt(upside.psa10)}`);
+  return parts.length ? `<p class="grading-upside">Grading upside: ${parts.join(' · ')}</p>` : '';
+}
+
 function rowInnerHTML(card) {
   const metaParts = [card.set, card.number ? '#' + card.number : null, card.rarity].filter(Boolean);
   if (card.gradingCompany && card.grade) metaParts.unshift(`${card.gradingCompany} ${card.grade}`);
   if (card.confidence === 'low') metaParts.push('low confidence');
 
   const priceHtml = card.status === 'priced' && card.marketPrice != null
-    ? `<span class="market">Market <strong>${fmt(card.marketPrice)}</strong>${card.priceLabel ? ' <span style="opacity:.6">(' + card.priceLabel + ')</span>' : ''}${card.exactMatch === false ? ' <span style="color:#FF6452">⚠ unverified — check card matches exactly</span>' : ''}</span>`
+    ? `<span class="market">Market <strong>${fmt(card.marketPrice)}</strong>${card.priceLabel ? ' <span style="opacity:.6">(' + card.priceLabel + ')</span>' : ''}${trendHtml(card.trends)}${card.exactMatch === false ? ' <span style="color:#FF6452">⚠ unverified — check card matches exactly</span>' : ''}</span>`
     : card.status === 'price-failed'
       ? `<span class="no-price">Couldn't fetch price${card.priceError ? ' (' + card.priceError + ')' : ''}</span>`
       : card.status === 'priced'
@@ -407,11 +447,19 @@ function rowInnerHTML(card) {
           ${card.askingPriceDetected ? '<span class="ask-detected" title="Auto-filled from a price tag detected in the photo">from tag</span>' : ''}
           <span class="verdict-chip">${chip}</span>
         </div>
+        ${gradingUpsideHtml(card.gradingUpside)}
         ${card.variants && card.variants.length > 1 ? `
         <div class="variant-picker">
           <label for="variant-${card.id}">Variant</label>
           <select id="variant-${card.id}" class="variantSelect" data-id="${card.id}">
-            ${card.variants.map(v => `<option value="${v.name}"${v.name === (card.selectedVariant || card.variant) ? ' selected' : ''}>${v.name}${v.hasPrice ? '' : ' (no price)'}</option>`).join('')}
+            ${card.variants.map(v => `<option value="${v.name}"${v.name === card.variant ? ' selected' : ''}>${v.name}${v.hasPrice ? '' : ' (no price)'}</option>`).join('')}
+          </select>
+        </div>` : ''}
+        ${card.conditions && card.conditions.length > 1 ? `
+        <div class="variant-picker">
+          <label for="condition-${card.id}">Condition</label>
+          <select id="condition-${card.id}" class="conditionSelect" data-id="${card.id}">
+            ${card.conditions.map(c => `<option value="${c.condition}"${c.condition === card.condition ? ' selected' : ''}>${c.condition} (${fmt(c.market)})</option>`).join('')}
           </select>
         </div>` : ''}
       </div>
@@ -448,6 +496,10 @@ function bindRowEvents(rowEl, card) {
   if (variantSelect) {
     variantSelect.addEventListener('change', (e) => changeVariant(card, e.target.value));
   }
+  const conditionSelect = rowEl.querySelector('.conditionSelect');
+  if (conditionSelect) {
+    conditionSelect.addEventListener('change', (e) => changeCondition(card, e.target.value));
+  }
 }
 
 async function changeVariant(card, newVariant) {
@@ -457,17 +509,23 @@ async function changeVariant(card, newVariant) {
   refreshRow(card);
   try {
     const priceInfo = await lookupPrice(card);
-    if (priceInfo) {
-      card.marketPrice = priceInfo.marketPrice;
-      card.priceLabel = priceInfo.priceLabel;
-      card.tcgUrl = priceInfo.tcgUrl;
-      card.sourceLabel = priceInfo.sourceLabel || card.sourceLabel;
-      card.imageUrl = priceInfo.imageUrl || card.imageUrl;
-      card.exactMatch = priceInfo.exactMatch !== false;
-      card.cardId = priceInfo.cardId || card.cardId;
-      card.variants = priceInfo.variants || card.variants;
-      card.selectedVariant = priceInfo.selectedVariant || newVariant;
-    }
+    applyPriceInfo(card, priceInfo);
+    card.status = 'priced';
+  } catch (err) {
+    card.status = 'price-failed';
+    card.priceError = err.message;
+  }
+  refreshRow(card);
+}
+
+async function changeCondition(card, newCondition) {
+  card.condition = newCondition;
+  card.marketPrice = null;
+  card.status = 'pricing';
+  refreshRow(card);
+  try {
+    const priceInfo = await lookupPrice(card);
+    applyPriceInfo(card, priceInfo);
     card.status = 'priced';
   } catch (err) {
     card.status = 'price-failed';
